@@ -26,33 +26,51 @@ class SpotService
         return $spot ?: null;
     }
 
-    public function verifyOwner(string $number, string $firstName): bool
+    public function verifyOwner(string $number, string $apartment): bool
     {
         $spot = $this->getByNumber($number);
         if (!$spot) {
             return false;
         }
 
-        return password_verify($firstName, $spot['first_name_hash']);
+        return password_verify($apartment, $spot['apartment_hash']);
     }
 
-    public function register(string $number, string $firstName): array
+    public function register(string $number, string $apartment, ?string $phone = null): array
     {
         if ($this->exists($number)) {
             json_error('Cette place est déjà enregistrée.');
         }
 
-        $hash = password_hash($firstName, PASSWORD_DEFAULT);
-        $stmt = $this->pdo->prepare('INSERT INTO spots (number, first_name_hash) VALUES (?, ?)');
-        $stmt->execute([$number, $hash]);
+        $hash = password_hash($apartment, PASSWORD_DEFAULT);
+        $phoneEncrypted = $phone !== null ? encrypt_value($phone) : null;
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO spots (number, apartment_hash, phone_encrypted) VALUES (?, ?, ?)'
+        );
+        $stmt->execute([$number, $hash, $phoneEncrypted]);
 
         return $this->getSpotDetails($number);
     }
 
-    public function confirm(string $number, string $firstName): array
+    public function updatePhone(string $number, ?string $phone): array
     {
-        if (!$this->verifyOwner($number, $firstName)) {
-            json_error('Prénom incorrect.', 403);
+        $spot = $this->getByNumber($number);
+        if (!$spot) {
+            json_error('Place introuvable.', 404);
+        }
+
+        $phoneEncrypted = $phone !== null ? encrypt_value($phone) : null;
+        $stmt = $this->pdo->prepare('UPDATE spots SET phone_encrypted = ? WHERE id = ?');
+        $stmt->execute([$phoneEncrypted, $spot['id']]);
+
+        return $this->getSpotDetails($number);
+    }
+
+    public function confirm(string $number, string $apartment): array
+    {
+        if (!$this->verifyOwner($number, $apartment)) {
+            json_error('Numéro d\'appartement incorrect.', 403);
         }
 
         return $this->getSpotDetails($number);
@@ -110,7 +128,7 @@ class SpotService
     public function listSpots(?string $viewerSpotNumber = null): array
     {
         $stmt = $this->pdo->query(
-            'SELECT s.id, s.number, ap.id AS parking_id, ap.parked_by_spot_number
+            'SELECT s.id, s.number, s.phone_encrypted, ap.id AS parking_id, ap.parked_by_spot_number
              FROM spots s
              LEFT JOIN active_parkings ap ON ap.spot_id = s.id
              ORDER BY s.number ASC'
@@ -136,6 +154,7 @@ class SpotService
                 'number' => $row['number'],
                 'status' => $status,
                 'status_label' => status_label($status),
+                'phone' => decrypt_value($row['phone_encrypted']),
             ];
 
             if ($status === 'occupied') {
@@ -187,6 +206,7 @@ class SpotService
                 'depart_at' => $trip['depart_at'],
                 'return_at' => $trip['return_at'],
             ] : null,
+            'phone' => decrypt_value($spot['phone_encrypted'] ?? null),
         ];
     }
 
@@ -283,13 +303,13 @@ class SpotService
         return $this->getSpotDetails($number);
     }
 
-    public function changeNumber(string $currentNumber, string $newNumber, string $firstName): array
+    public function changeNumber(string $currentNumber, string $newNumber, string $apartment): array
     {
         if ($currentNumber === $newNumber) {
             json_error('Le nouveau numéro est identique.');
         }
 
-        if (!$this->verifyOwner($currentNumber, $firstName)) {
+        if (!$this->verifyOwner($currentNumber, $apartment)) {
             json_error('Accès refusé.', 403);
         }
 

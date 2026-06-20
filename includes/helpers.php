@@ -58,38 +58,86 @@ function normalize_spot_number(string $number): string
     return str_pad($digits, 3, '0', STR_PAD_LEFT);
 }
 
-function normalize_first_name(string $name): string
+function normalize_apartment(string $value): string
 {
-    $name = mb_strtolower(trim($name), 'UTF-8');
+    $value = trim($value);
+    $value = preg_replace('/\s+/u', ' ', $value) ?? '';
 
-    if (function_exists('transliterator_transliterate')) {
-        $converted = transliterator_transliterate('Any-Latin; Latin-ASCII', $name);
-        if (is_string($converted)) {
-            $name = strtolower($converted);
-        }
-    } else {
-        $converted = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name);
-        if (is_string($converted)) {
-            $name = strtolower($converted);
-        }
-    }
-
-    return preg_replace('/[^a-z]/', '', $name) ?? '';
+    return mb_strtoupper($value, 'UTF-8');
 }
 
-function validate_first_name(string $name): string
+function validate_apartment(string $value): string
 {
-    $raw = trim($name);
-    if ($raw === '' || mb_strlen($raw) > 50) {
-        json_error('Prénom invalide.');
+    $raw = trim($value);
+    if ($raw === '' || mb_strlen($raw) > 30) {
+        json_error('Numéro d\'appartement invalide.');
     }
 
-    $normalized = normalize_first_name($raw);
-    if ($normalized === '') {
-        json_error('Prénom invalide.');
+    return normalize_apartment($raw);
+}
+
+function validate_phone(?string $phone): ?string
+{
+    if ($phone === null) {
+        return null;
     }
 
-    return $normalized;
+    $phone = trim($phone);
+    if ($phone === '') {
+        return null;
+    }
+
+    $digits = preg_replace('/\D/', '', $phone) ?? '';
+    if (!preg_match('/^0[1-9]\d{8}$/', $digits)) {
+        json_error('Numéro de téléphone invalide.');
+    }
+
+    return trim(chunk_split($digits, 2, ' '));
+}
+
+function app_encryption_key(): string
+{
+    $key = ENCRYPTION_KEY;
+    $decoded = $key !== '' ? base64_decode($key, true) : false;
+
+    if (is_string($decoded) && strlen($decoded) === 32) {
+        return $decoded;
+    }
+
+    return hash('sha256', $key !== '' ? $key : ACCESS_CODE, true);
+}
+
+function encrypt_value(string $plain): string
+{
+    $iv = random_bytes(12);
+    $tag = '';
+    $cipher = openssl_encrypt($plain, 'aes-256-gcm', app_encryption_key(), OPENSSL_RAW_DATA, $iv, $tag);
+
+    if ($cipher === false) {
+        throw new RuntimeException('Échec du chiffrement.');
+    }
+
+    return base64_encode($iv . $tag . $cipher);
+}
+
+function decrypt_value(?string $encoded): ?string
+{
+    if ($encoded === null || $encoded === '') {
+        return null;
+    }
+
+    $raw = base64_decode($encoded, true);
+    if ($raw === false || strlen($raw) < 29) {
+        return null;
+    }
+
+    $iv = substr($raw, 0, 12);
+    $tag = substr($raw, 12, 16);
+    $cipher = substr($raw, 28);
+
+    $plain = openssl_decrypt($cipher, 'aes-256-gcm', app_encryption_key(), OPENSSL_RAW_DATA, $iv, $tag);
+
+    return $plain === false ? null : $plain;
 }
 
 function parse_datetime(string $value): DateTimeImmutable
@@ -203,12 +251,12 @@ function require_spot_credentials(): array
 {
     $body = request_body();
     $number = normalize_spot_number((string) ($body['number'] ?? ''));
-    $firstName = validate_first_name((string) ($body['first_name'] ?? ''));
+    $apartment = validate_apartment((string) ($body['apartment'] ?? ''));
 
     $service = new SpotService();
-    if (!$service->verifyOwner($number, $firstName)) {
+    if (!$service->verifyOwner($number, $apartment)) {
         json_error('Accès refusé à cette place.', 403);
     }
 
-    return ['number' => $number, 'first_name' => $firstName];
+    return ['number' => $number, 'apartment' => $apartment];
 }

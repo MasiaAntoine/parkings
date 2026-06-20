@@ -1,7 +1,8 @@
 CREATE TABLE spots (
     id INT AUTO_INCREMENT PRIMARY KEY,
     number VARCHAR(3) NOT NULL UNIQUE,
-    first_name_hash VARCHAR(255) NOT NULL,
+    apartment_hash VARCHAR(255) NOT NULL,
+    phone_encrypted TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

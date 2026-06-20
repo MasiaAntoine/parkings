@@ -35,17 +35,20 @@ const Storage = {
     this.save(session);
   },
 
-  setProfile(number, firstName) {
+  setProfile(number, apartment) {
     const session = this.get() || {};
     session.spot_number = number;
-    session.first_name = firstName;
+    session.apartment = apartment;
+    delete session.first_name;
     this.save(session);
   },
 
   getProfile() {
     const session = this.get();
-    if (!session?.spot_number || !session?.first_name) return null;
-    return { number: session.spot_number, first_name: session.first_name };
+    if (!session?.spot_number) return null;
+    const apartment = session.apartment ?? session.first_name;
+    if (!apartment) return null;
+    return { number: session.spot_number, apartment };
   },
 
   updateSpotNumber(newNumber) {

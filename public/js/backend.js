@@ -24,12 +24,24 @@ const Backend = {
     return this.request("spot_exists", { number });
   },
 
-  registerSpot(number, firstName) {
-    return this.request("register_spot", { number, first_name: firstName });
+  registerSpot(number, apartment, phone = null) {
+    return this.request("register_spot", {
+      number,
+      apartment,
+      phone: phone ?? "",
+    });
   },
 
-  confirmSpot(number, firstName) {
-    return this.request("confirm_spot", { number, first_name: firstName });
+  updatePhone(number, apartment, phone) {
+    return this.request("update_phone", {
+      number,
+      apartment,
+      phone: phone ?? "",
+    });
+  },
+
+  confirmSpot(number, apartment) {
+    return this.request("confirm_spot", { number, apartment });
   },
 
   listSpots(viewerNumber = null) {
@@ -41,10 +53,10 @@ const Backend = {
     return this.request("get_spot", { number });
   },
 
-  saveSchedules(number, firstName, schedules) {
+  saveSchedules(number, apartment, schedules) {
     return this.request("save_schedules", {
       number,
-      first_name: firstName,
+      apartment,
       schedules,
     });
   },
@@ -57,23 +69,23 @@ const Backend = {
     return this.request("unpark", { number });
   },
 
-  createTrip(number, firstName, departAt, returnAt) {
+  createTrip(number, apartment, departAt, returnAt) {
     return this.request("create_trip", {
       number,
-      first_name: firstName,
+      apartment,
       depart_at: departAt,
       return_at: returnAt,
     });
   },
 
-  cancelTrip(number, firstName) {
-    return this.request("cancel_trip", { number, first_name: firstName });
+  cancelTrip(number, apartment) {
+    return this.request("cancel_trip", { number, apartment });
   },
 
-  changeNumber(number, firstName, newNumber) {
+  changeNumber(number, apartment, newNumber) {
     return this.request("change_number", {
       number,
-      first_name: firstName,
+      apartment,
       new_number: newNumber,
     });
   },

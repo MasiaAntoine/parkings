@@ -12,8 +12,8 @@ L'objectif est le bon voisinage : partager les places de parking dans la réside
 | Question                          | Décision                                                                                                             |
 | --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Une ou plusieurs résidences ?     | **Une seule instance** — tous les immeubles partagent le même parking et le **même code à 6 chiffres** (dans `.env`) |
-| Quelles données sont collectées ? | Numéro de place (3 chiffres max) + prénom uniquement                                                                 |
-| Le prénom est-il affiché ?        | **Non, jamais** — il sert uniquement à confirmer l'accès à une place (voir section dédiée)                           |
+| Quelles données sont collectées ? | Numéro de place (3 chiffres max) + numéro d'appartement (format libre)                                               |
+| Le numéro d'appartement est-il affiché ? | **Non, jamais** — il sert uniquement à confirmer l'accès à une place (voir section dédiée)                    |
 | Nom de l'app                      | **Parking**                                                                                                          |
 | Langue                            | Français                                                                                                             |
 | Fuseau horaire                    | Europe/Paris, format 24 h                                                                                            |
@@ -31,14 +31,16 @@ L'objectif est le bon voisinage : partager les places de parking dans la réside
 | Que signifie le numéro saisi au premier passage ?                   | C'est **sa place attitrée** — la personne en devient le référent                                           |
 | Peut-on changer de numéro ?                                         | **Oui**, depuis l'écran « Ma place », tant que le nouveau numéro n'est pas déjà pris par quelqu'un d'autre |
 | Les places jamais enregistrées existent-elles dans l'app ?          | **Non** — une place n'apparaît que si quelqu'un l'a enregistrée                                            |
-| Que se passe-t-il si je saisis un numéro déjà enregistré ?          | Je suis considéré comme le référent de cette place ; l'app demande mon **prénom pour confirmer**           |
-| Et si le prénom ne correspond pas ?                                 | **Accès refusé** — le prénom doit correspondre exactement à celui en base                                  |
+| Que se passe-t-il si je saisis un numéro déjà enregistré ?          | Je suis considéré comme le référent de cette place ; l'app demande mon **numéro d'appartement pour confirmer** |
+| Et si le numéro d'appartement ne correspond pas ?                   | **Accès refusé** — le numéro doit correspondre à celui enregistré (comparaison insensible à la casse)          |
 | Peut-on modifier les horaires récurrents après la première config ? | **Oui**, à tout moment depuis « Ma place »                                                                 |
 
 
-### Prénom — confirmation d'authentification uniquement
+### Numéro d'appartement — confirmation d'authentification uniquement
 
-Le prénom n'est **pas** une donnée d'affichage. C'est un **second facteur d'accès** à une place, comparable au code à 6 chiffres pour l'app entière.
+Le numéro d'appartement n'est **pas** une donnée d'affichage. C'est un **second facteur d'accès** à une place, comparable au code à 6 chiffres pour l'app entière.
+
+**Format** : libre (ex. `A01`, `B12`, `3G`) — pas de contrainte de format imposée côté app, seule une longueur max (30 caractères). La comparaison est insensible à la casse (`a01` = `A01`).
 
 **Quand il est demandé** (écran de saisie uniquement, jamais en lecture) :
 
@@ -50,7 +52,7 @@ Le prénom n'est **pas** une donnée d'affichage. C'est un **second facteur d'ac
 - Accueil (liste des places)
 - Écran « Ma place »
 - Actions « je suis garé » / « je ne suis plus garé »
-- Messages système (ex. : « Le propriétaire de la place 042 est de retour » — jamais de prénom)
+- Messages système (ex. : « Le propriétaire de la place 042 est de retour » — jamais de numéro d'appartement)
 - Réponses serveur consommées par le front
 
 **Ce que l'utilisateur voit partout** : numéro de place + statut uniquement.
@@ -80,7 +82,7 @@ Le prénom n'est **pas** une donnée d'affichage. C'est un **second facteur d'ac
 | Comment la place devient-elle disponible ?            | **24 h/24** sur la période déclarée                                                                                                                         |
 | Précision des horaires                                | Premier jour : disponible à partir de l'**heure de départ** ; jour de retour : disponible jusqu'à l'**heure de retour**                                     |
 | Peut-on annuler un déplacement avant la date prévue ? | **Oui** — la place redevient indisponible selon ses règles habituelles                                                                                      |
-| Et si quelqu'un est garé lors de l'annulation ?       | Un **bandeau visible** l'informe : « Le propriétaire de la place XXX est de retour » (sans prénom), dismissible, visible 24 h ou jusqu'à fermeture manuelle |
+| Et si quelqu'un est garé lors de l'annulation ?       | Un **bandeau visible** l'informe : « Le propriétaire de la place XXX est de retour » (sans numéro d'appartement), dismissible, visible 24 h ou jusqu'à fermeture manuelle |
 
 
 ### Occupation (« je suis garé »)
@@ -102,7 +104,7 @@ Le prénom n'est **pas** une donnée d'affichage. C'est un **second facteur d'ac
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Type de compte               | **Aucun** — pas de mot de passe, pas d'email, pas de compte utilisateur                                                   |
 | Code d'accès                 | **6 chiffres** dans `.env`, saisi une fois, mémorisé **7 jours** en localStorage                                          |
-| Que mémorise le navigateur ? | Date d'expiration du code + **numéro de place + prénom** → retour direct sur l'**accueil** sans repasser par l'onboarding |
+| Que mémorise le navigateur ? | Date d'expiration du code + **numéro de place + numéro d'appartement** → retour direct sur l'**accueil** sans repasser par l'onboarding |
 | Protection brute force       | **5 tentatives** de code incorrectes par IP / **15 minutes**                                                              |
 
 
@@ -114,12 +116,12 @@ Le prénom n'est **pas** une donnée d'affichage. C'est un **second facteur d'ac
 Ouverture app
   → Code valide en local ?
       Non → Saisie code 6 chiffres
-  → Place + prénom en local ?
+  → Place + appartement en local ?
       Oui → Accueil
       Non → Saisie numéro de place (3 chiffres)
           → Place en base ?
-              Non → Prénom → Config horaires → Accueil
-              Oui → Prénom pour confirmer
+              Non → Appartement → Config horaires → Accueil
+              Oui → Appartement pour confirmer
                   → Correspond ?
                       Non → Erreur, accès refusé
                       Oui → Horaires configurés ?
@@ -133,7 +135,7 @@ Accueil → Garer / Libérer / Ma place / Déplacement
 
 1. **Connexion** — code 6 chiffres (si session expirée)
 2. **Onboarding place** — 3 champs chiffre par chiffre pour le numéro
-3. **Onboarding prénom** — saisie ou confirmation si place existante
+3. **Onboarding appartement** — saisie ou confirmation si place existante (format libre, ex. A01)
 4. **Configuration horaires** — jours de la semaine + plages début/fin
 5. **Accueil** — toutes les places enregistrées (numéro + statut) + actions garer/libérer + bandeaux d'alerte
 6. **Ma place** — statut, horaires, déplacement, changement de numéro, réinitialisation session
@@ -143,11 +145,11 @@ Accueil → Garer / Libérer / Ma place / Déplacement
 
 ## Données et modèle conceptuel
 
-Aucune donnée confidentielle n'est demandée : le prénom seul et le numéro de place ne constituent pas des données personnelles au sens RGPD, et le prénom n'est jamais affiché.
+Aucune donnée confidentielle n'est demandée : le numéro d'appartement seul et le numéro de place ne constituent pas des données personnelles au sens RGPD, et le numéro d'appartement n'est jamais affiché.
 
 ```
 spots
-  id, number (001–999, unique), first_name_hash, created_at
+  id, number (001–999, unique), apartment_hash, created_at
 
 spot_schedules
   spot_id, day_of_week (0=lundi … 6=dimanche), start_time, end_time
@@ -157,7 +159,7 @@ spot_trips
 
 active_parkings
   spot_id, parked_at
-  (occupation anonyme — pas de prénom stocké ni affiché)
+  (occupation anonyme — pas de numéro d'appartement stocké ni affiché)
 
 spot_alerts
   spot_id, message, created_at, dismissed_at
@@ -166,7 +168,7 @@ auth_attempts
   ip_address, attempted_at, success
 
 localStorage (côté client)
-  auth_expires_at, spot_number, first_name (secret, jamais affiché)
+  auth_expires_at, spot_number, apartment (secret, jamais affiché)
 ```
 
 ---

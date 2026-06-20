@@ -47,14 +47,25 @@ try {
 
         'register_spot' => (function () use ($spots, $body): void {
             $number = normalize_spot_number((string) ($body['number'] ?? ''));
-            $firstName = validate_first_name((string) ($body['first_name'] ?? ''));
-            json_response($spots->register($number, $firstName), 201);
+            $apartment = validate_apartment((string) ($body['apartment'] ?? ''));
+            $phone = validate_phone(isset($body['phone']) ? (string) $body['phone'] : null);
+            json_response($spots->register($number, $apartment, $phone), 201);
+        })(),
+
+        'update_phone' => (function () use ($spots, $body): void {
+            $number = normalize_spot_number((string) ($body['number'] ?? ''));
+            $credentials = require_spot_credentials();
+            if ($credentials['number'] !== $number) {
+                json_error('Accès refusé.', 403);
+            }
+            $phone = validate_phone(isset($body['phone']) ? (string) $body['phone'] : null);
+            json_response($spots->updatePhone($number, $phone));
         })(),
 
         'confirm_spot' => (function () use ($spots, $body): void {
             $number = normalize_spot_number((string) ($body['number'] ?? ''));
-            $firstName = validate_first_name((string) ($body['first_name'] ?? ''));
-            json_response($spots->confirm($number, $firstName));
+            $apartment = validate_apartment((string) ($body['apartment'] ?? ''));
+            json_response($spots->confirm($number, $apartment));
         })(),
 
         'save_schedules' => (function () use ($spots, $body): void {
@@ -103,9 +114,9 @@ try {
 
         'change_number' => (function () use ($spots, $body): void {
             $number = normalize_spot_number((string) ($body['number'] ?? ''));
-            $firstName = validate_first_name((string) ($body['first_name'] ?? ''));
+            $apartment = validate_apartment((string) ($body['apartment'] ?? ''));
             $newNumber = normalize_spot_number((string) ($body['new_number'] ?? ''));
-            json_response($spots->changeNumber($number, $newNumber, $firstName));
+            json_response($spots->changeNumber($number, $newNumber, $apartment));
         })(),
 
         'list_alerts' => json_response(['alerts' => $spots->getAlerts()]),
