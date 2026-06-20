@@ -90,9 +90,9 @@
 </head>
 <body class="text-slate-900">
     <div id="app" class="relative mx-auto flex min-h-dvh w-full max-w-md flex-col"></div>
-    <script src="/js/storage.js?v=24"></script>
-    <script src="/js/backend.js?v=24"></script>
-    <script src="/js/app.js?v=24"></script>
+    <script src="/js/storage.js?v=26"></script>
+    <script src="/js/backend.js?v=26"></script>
+    <script src="/js/app.js?v=26"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});

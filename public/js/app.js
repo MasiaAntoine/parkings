@@ -465,7 +465,7 @@ function renderApartmentScreen() {
           const result = await Backend.confirmSpot(state.spotNumber, apartment);
           Storage.setProfile(state.spotNumber, apartment);
           if (!result.has_schedules) {
-            state.schedules = defaultSchedules();
+            state.schedules = [];
             state.schedulesBackScreen = "apartment";
             state.screen = "schedules";
           } else {
@@ -524,7 +524,7 @@ function renderOnboardingPhoneScreen() {
       Storage.setProfile(state.spotNumber, state.onboardingApartment);
       state.onboardingApartment = "";
       if (!result.has_schedules) {
-        state.schedules = defaultSchedules();
+        state.schedules = [];
         state.schedulesBackScreen = "onboarding-phone";
         state.screen = "schedules";
       } else {
@@ -550,18 +550,91 @@ function renderOnboardingPhoneScreen() {
   });
 }
 
-function defaultSchedules() {
-  return [1, 2, 3, 4, 5].map((dow) => ({
-    day_of_week: dow,
-    start_time: "08:00",
-    end_time: "18:00",
-  }));
+function schedulesSummary(schedules) {
+  if (!schedules?.length) {
+    return "Aucun jour · hors plage sauf déplacement";
+  }
+
+  return schedules
+    .slice()
+    .sort((a, b) => a.day_of_week - b.day_of_week)
+    .map((s) => DAYS.find((d) => d.id === s.day_of_week)?.short || "?")
+    .join(", ");
+}
+
+function spotMetaHtml(spot) {
+  const lines = [];
+
+  if (spot.trip_line) {
+    lines.push({
+      icon: "plane",
+      text: spot.trip_line,
+      className: "text-brand-700",
+    });
+  }
+
+  if (spot.schedule_lines?.length) {
+    spot.schedule_lines.forEach((line) => {
+      lines.push({
+        icon: "clock",
+        text: line,
+        className: "text-slate-500",
+      });
+    });
+  } else if (!spot.trip_line && !spot.schedules?.length) {
+    lines.push({
+      icon: "calendar-off",
+      text: "Aucun horaire récurrent",
+      className: "text-slate-400",
+    });
+  }
+
+  if (spot.availability_hint) {
+    const className =
+      spot.status === "occupied"
+        ? "text-amber-800 font-medium"
+        : spot.status === "available"
+          ? "text-emerald-700 font-medium"
+          : "text-slate-400";
+    lines.push({
+      icon: spot.status === "occupied" ? "alarm-clock" : "info",
+      text: spot.availability_hint,
+      className,
+    });
+  }
+
+  if (!lines.length) {
+    return "";
+  }
+
+  return `<div class="mt-3 space-y-1.5">${lines
+    .map(
+      (line) =>
+        `<p class="text-sm flex items-start gap-2 ${line.className}">${icon(line.icon, "w-4 h-4 shrink-0 mt-0.5")}<span>${escapeHtml(line.text)}</span></p>`,
+    )
+    .join("")}</div>`;
+}
+
+async function persistSchedules(newSchedules) {
+  const profile = Storage.getProfile();
+  if (!profile) {
+    state.screen = "spot";
+    render();
+    return;
+  }
+
+  await Backend.saveSchedules(
+    profile.number,
+    profile.apartment,
+    newSchedules,
+  );
+  state.schedules = newSchedules;
+  state.screen = state.afterSchedules || "home";
+  await render();
 }
 
 function renderSchedulesScreen() {
-  const schedules = state.schedules.length
-    ? state.schedules
-    : defaultSchedules();
+  const schedules = state.schedules;
   const fromMySpot = state.afterSchedules === "my-spot";
 
   const goBackFromSchedules = () => {
@@ -584,7 +657,7 @@ function renderSchedulesScreen() {
       </div>
     `,
     content: `
-      <p class="text-slate-500 mb-5">Activez les jours et précisez les plages horaires.</p>
+      <p class="text-slate-500 mb-5">Activez les jours et précisez les plages horaires. Sans jour sélectionné, la place reste hors plage (sauf en déplacement).</p>
       <form id="schedules-form" class="space-y-3">
         ${DAYS.map((day) => {
           const schedule = schedules.find((s) => s.day_of_week === day.id);
@@ -655,19 +728,8 @@ function renderSchedulesScreen() {
         });
       });
 
-      if (newSchedules.length === 0) {
-        showError("Sélectionnez au moins un jour.");
-        return;
-      }
-
       try {
-        await Backend.saveSchedules(
-          profile.number,
-          profile.apartment,
-          newSchedules,
-        );
-        state.screen = state.afterSchedules || "home";
-        render();
+        await persistSchedules(newSchedules);
       } catch (err) {
         showError(err.message);
       }
@@ -686,8 +748,7 @@ async function loadHomeData() {
 
 function renderHomeScreen() {
   const profile = Storage.getProfile();
-  const activeSpotsInHours = state.spots.filter(spot => spot.status !== "off_hours");
-  const available = activeSpotsInHours.filter((s) => s.status === "available").length;
+  const available = state.spots.filter((s) => s.status === "available").length;
 
   const alertsHtml = state.alerts
     .map(
@@ -704,17 +765,18 @@ function renderHomeScreen() {
     .join("");
 
   const spotsHtml =
-    activeSpotsInHours.length === 0
+    state.spots.length === 0
       ? `<div class="text-center py-16">
           <div class="grid place-items-center w-16 h-16 mx-auto rounded-3xl bg-slate-100 text-slate-400 mb-4">${icon("parking-square", "w-8 h-8")}</div>
-          <p class="text-slate-500 font-medium">Aucune place disponible</p>
-          <p class="text-slate-400 text-sm mt-1">Aucune place n'est active pour le moment.</p>
+          <p class="text-slate-500 font-medium">Aucune place enregistrée</p>
+          <p class="text-slate-400 text-sm mt-1">Les places apparaissent ici une fois configurées.</p>
         </div>`
-      : activeSpotsInHours
+      : state.spots
           .map((spot) => {
             const isMine = profile && spot.number === profile.number;
             const canPark = spot.status === "available";
             const canUnpark = spot.status === "occupied";
+            const isOffHours = spot.status === "off_hours";
             const occupationHtml =
               spot.status === "occupied" && spot.occupation_message
                 ? `<p class="text-sm text-slate-500 flex items-center gap-2 mt-3">${icon("user", "w-4 h-4 shrink-0")}<span>${escapeHtml(spot.occupation_message)}</span></p>`
@@ -728,7 +790,7 @@ function renderHomeScreen() {
                 ? `<button data-unpark="${spot.number}" class="w-full inline-flex items-center justify-center gap-2 bg-slate-800 text-white text-sm font-semibold rounded-xl py-3 active:scale-[0.98] transition shadow-soft">${icon("log-out", "w-4 h-4")}<span>Libérer la place</span></button>`
                 : "";
             return `
-              <div class="${CARD} mb-3 ${isMine ? "ring-2 ring-brand-400" : ""}">
+              <div class="${CARD} mb-3 ${isMine ? "ring-2 ring-brand-400" : ""} ${isOffHours ? "opacity-90" : ""}">
                 <div class="flex items-start justify-between gap-3">
                   <div class="flex items-center gap-3 min-w-0">
                     <span class="grid place-items-center w-12 h-12 shrink-0 rounded-2xl bg-slate-50 ring-1 ring-slate-900/5 relative">
@@ -742,6 +804,7 @@ function renderHomeScreen() {
                   </div>
                   ${statusPill(spot.status, spot.status_label)}
                 </div>
+                ${spotMetaHtml(spot)}
                 ${occupationHtml}
                 ${action ? `<div class="mt-4">${action}</div>` : ""}
               </div>
@@ -750,12 +813,14 @@ function renderHomeScreen() {
           .join("");
 
   const summaryText =
-    available === 0
-      ? "Aucune place disponible"
-      : `<span class="font-bold text-slate-800">${available}</span> place${available > 1 ? "s" : ""} dispo${available > 1 ? "s" : ""} sur ${activeSpotsInHours.length}`;
+    state.spots.length === 0
+      ? ""
+      : available === 0
+        ? `Aucune place disponible · ${state.spots.length} enregistrée${state.spots.length > 1 ? "s" : ""}`
+        : `<span class="font-bold text-slate-800">${available}</span> place${available > 1 ? "s" : ""} dispo${available > 1 ? "s" : ""} sur ${state.spots.length}`;
 
   const summary =
-    activeSpotsInHours.length > 0
+    state.spots.length > 0
       ? `<div class="flex items-center justify-between mb-4 px-1">
           <p class="text-sm text-slate-500">${summaryText}</p>
           <button id="refresh-btn" class="inline-flex items-center gap-1.5 text-sm text-brand-600 font-semibold active:scale-95 transition">${icon("refresh-cw", "w-4 h-4")}<span>Actualiser</span></button>
@@ -885,7 +950,7 @@ function renderMySpotScreen() {
         ${tripBlock}
 
         <div class="pt-2 space-y-3">
-          ${settingRow("edit-schedules-btn", "clock", "Horaires de disponibilité")}
+          ${settingRow("edit-schedules-btn", "clock", "Horaires de disponibilité", schedulesSummary(spot?.schedules))}
           ${settingRow("edit-phone-btn", "phone", "Téléphone", spot?.phone ? spot.phone : "Optionnel · visible par tous")}
           ${settingRow("change-number-btn", "replace", "Changer de numéro de place")}
         </div>
@@ -904,9 +969,7 @@ function renderMySpotScreen() {
       try {
         const profile = Storage.getProfile();
         const spot = await Backend.getSpot(profile.number);
-        state.schedules = spot.schedules.length
-          ? spot.schedules
-          : defaultSchedules();
+        state.schedules = spot.schedules || [];
         state.afterSchedules = "my-spot";
         state.screen = "schedules";
         render();

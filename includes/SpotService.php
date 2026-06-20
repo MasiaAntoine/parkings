@@ -164,6 +164,8 @@ class SpotService
                 $entry['parked_by_me'] = $parkedByMe;
             }
 
+            $entry = array_merge($entry, spot_listing_extras($spotData, $dt));
+
             $result[] = $entry;
         }
 
@@ -195,13 +197,10 @@ class SpotService
             'status' => $status,
             'status_label' => status_label($status),
             'has_schedules' => count($schedules) > 0,
-            'schedules' => array_map(static function (array $s): array {
-                return [
-                    'day_of_week' => (int) $s['day_of_week'],
-                    'start_time' => substr($s['start_time'], 0, 5),
-                    'end_time' => substr($s['end_time'], 0, 5),
-                ];
-            }, $schedules),
+            'schedules' => format_schedules_for_api($schedules),
+            'schedule_lines' => build_schedule_lines($schedules),
+            'trip_line' => format_trip_line($trip),
+            'availability_hint' => build_availability_hint($spotData, now()),
             'active_trip' => $trip ? [
                 'depart_at' => $trip['depart_at'],
                 'return_at' => $trip['return_at'],

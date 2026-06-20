@@ -9,11 +9,11 @@ if ($action === '') {
     json_error('Action manquante.', 400);
 }
 
-$body = request_body();
-$auth = new AuthService();
-$spots = new SpotService();
-
 try {
+    $body = request_body();
+    $auth = new AuthService();
+    $spots = new SpotService();
+
     match ($action) {
         'verify_code' => (function () use ($auth, $body): void {
             $code = (string) ($body['code'] ?? '');

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-function load_env_file(string $path): void
+function load_env_file(string $path, bool $override = false): void
 {
     if (!is_readable($path)) {
         return;
@@ -25,7 +25,7 @@ function load_env_file(string $path): void
         }
 
         $name = trim(substr($line, 0, $separator));
-        if ($name === '' || getenv($name) !== false) {
+        if ($name === '' || (!$override && getenv($name) !== false)) {
             continue;
         }
 
@@ -48,8 +48,15 @@ function config_root(): string
     return function_exists('app_root') ? app_root() : dirname(__DIR__);
 }
 
-load_env_file(config_root() . '/.env.docker.dev');
-load_env_file(config_root() . '/.env');
+function is_docker_runtime(): bool
+{
+    return file_exists('/.dockerenv');
+}
+
+if (is_docker_runtime()) {
+    load_env_file(config_root() . '/.env.docker.dev');
+}
+load_env_file(config_root() . '/.env', override: true);
 
 date_default_timezone_set(getenv('TZ') ?: 'Europe/Paris');
 
