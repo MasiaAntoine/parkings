@@ -2,6 +2,49 @@
 
 declare(strict_types=1);
 
+function load_env_file(string $path): void
+{
+    if (!is_readable($path)) {
+        return;
+    }
+
+    $lines = file($path, FILE_IGNORE_NEW_LINES);
+    if ($lines === false) {
+        return;
+    }
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) {
+            continue;
+        }
+
+        $separator = strpos($line, '=');
+        if ($separator === false) {
+            continue;
+        }
+
+        $name = trim(substr($line, 0, $separator));
+        if ($name === '' || getenv($name) !== false) {
+            continue;
+        }
+
+        $value = trim(substr($line, $separator + 1));
+        if (
+            (str_starts_with($value, '"') && str_ends_with($value, '"'))
+            || (str_starts_with($value, "'") && str_ends_with($value, "'"))
+        ) {
+            $value = substr($value, 1, -1);
+        }
+
+        putenv("{$name}={$value}");
+        $_ENV[$name] = $value;
+        $_SERVER[$name] = $value;
+    }
+}
+
+load_env_file(dirname(__DIR__) . '/.env');
+
 date_default_timezone_set(getenv('TZ') ?: 'Europe/Paris');
 
 define('ACCESS_CODE', getenv('ACCESS_CODE') ?: '123456');
