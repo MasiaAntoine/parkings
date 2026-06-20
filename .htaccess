@@ -1,0 +1,13 @@
+RewriteEngine On
+
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# Bloquer l'accès web aux dossiers sensibles
+RewriteRule ^(?:includes|database|docker)(?:/|$) - [F,L]
+
+# Servir les fichiers statiques depuis public/ si absents à la racine
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ public/%{REQUEST_URI} [L]
