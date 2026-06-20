@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Parking">
+  <rect width="512" height="512" fill="#2563eb"/>
+  <rect x="168" y="148" width="176" height="216" rx="14" fill="#1e40af"/>
+  <rect x="192" y="172" width="128" height="168" rx="6" fill="none" stroke="#ffffff" stroke-width="11" stroke-dasharray="28 20" opacity="0.55"/>
+  <rect x="210" y="192" width="92" height="128" rx="30" fill="#ffffff"/>
+  <rect x="222" y="218" width="68" height="34" rx="11" fill="#93c5fd"/>
+  <rect x="222" y="266" width="68" height="30" rx="9" fill="#bfdbfe"/>
+  <rect x="198" y="214" width="12" height="30" rx="6" fill="#1e3a8a"/>
+  <rect x="302" y="214" width="12" height="30" rx="6" fill="#1e3a8a"/>
+  <rect x="198" y="276" width="12" height="30" rx="6" fill="#1e3a8a"/>
+  <rect x="302" y="276" width="12" height="30" rx="6" fill="#1e3a8a"/>
+</svg>
