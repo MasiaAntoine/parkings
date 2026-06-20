@@ -462,15 +462,9 @@ function renderApartmentScreen() {
       }
       try {
         if (state.spotExists) {
-          const result = await Backend.confirmSpot(state.spotNumber, apartment);
+          await Backend.confirmSpot(state.spotNumber, apartment);
           Storage.setProfile(state.spotNumber, apartment);
-          if (!result.has_schedules) {
-            state.schedules = [];
-            state.schedulesBackScreen = "apartment";
-            state.screen = "schedules";
-          } else {
-            state.screen = "home";
-          }
+          state.screen = "home";
         } else {
           state.onboardingApartment = apartment;
           state.screen = "onboarding-phone";
