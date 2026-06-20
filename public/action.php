@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/bootstrap.php';
 
 $action = get_action();
 if ($action === '') {
@@ -125,6 +125,11 @@ try {
             $id = (int) ($body['id'] ?? $_GET['id'] ?? 0);
             $spots->dismissAlert($id);
             json_response(['dismissed' => true]);
+        })(),
+
+        'health' => (function (): void {
+            Database::connection()->query('SELECT 1');
+            json_response(['ok' => true]);
         })(),
 
         default => json_error('Action inconnue.', 404),

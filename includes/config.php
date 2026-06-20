@@ -43,8 +43,13 @@ function load_env_file(string $path): void
     }
 }
 
-load_env_file(dirname(__DIR__) . '/.env.docker.dev');
-load_env_file(dirname(__DIR__) . '/.env');
+function config_root(): string
+{
+    return function_exists('app_root') ? app_root() : dirname(__DIR__);
+}
+
+load_env_file(config_root() . '/.env.docker.dev');
+load_env_file(config_root() . '/.env');
 
 date_default_timezone_set(getenv('TZ') ?: 'Europe/Paris');
 

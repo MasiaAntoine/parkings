@@ -209,11 +209,25 @@ docker/          # Config nginx + PHP
 docker compose up -d --build
 ```
 
-**Prod / Hostinger** — copiez le template et adaptez (fichier `.env` privé, non versionné) :
+**Prod / Hostinger** — structure dans `public_html/` :
+
+```
+public_html/
+  .env                 ← privé (DB Hostinger, ACCESS_CODE, ENCRYPTION_KEY)
+  includes/            ← obligatoire (protégé par .htaccess)
+  index.php            ← depuis public/
+  action.php           ← depuis public/
+  bootstrap.php        ← depuis public/
+  js/, logo.svg, …     ← reste de public/
+```
+
+Importez `database/schema.sql` via phpMyAdmin. Test : `GET /action.php?action=health` doit renvoyer `{"ok":true}`.
+
+Copiez le template d'environnement :
 
 ```bash
 cp .env.docker.dev .env
-# éditez .env : DB_HOST=localhost, identifiants MySQL Hostinger, etc.
+# éditez .env : DB_HOST=srvXXX.hstgr.io, identifiants MySQL Hostinger, etc.
 ```
 
 Ouvrir [http://localhost:8080](http://localhost:8080)
