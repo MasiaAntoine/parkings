@@ -16,7 +16,7 @@ services:
       - ./public:/var/www/html
       - ./includes:/var/www/includes
     env_file:
-      - .env
+      - .env.docker.dev
     depends_on:
       db:
         condition: service_healthy

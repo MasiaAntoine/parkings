@@ -203,14 +203,22 @@ docker/          # Config nginx + PHP
 
 ## Démarrage
 
+**Docker (dev local)** — utilise `.env.docker.dev` (versionné) :
+
 ```bash
-cp .env.example .env
 docker compose up -d --build
+```
+
+**Prod / Hostinger** — copiez le template et adaptez (fichier `.env` privé, non versionné) :
+
+```bash
+cp .env.docker.dev .env
+# éditez .env : DB_HOST=localhost, identifiants MySQL Hostinger, etc.
 ```
 
 Ouvrir [http://localhost:8080](http://localhost:8080)
 
-Le code d'accès par défaut est `123456` (modifiable via `ACCESS_CODE` dans `.env`).
+Le code d'accès dev est `364728` (modifiable via `ACCESS_CODE` dans `.env.docker.dev` ou `.env`).
 
 ---
 
