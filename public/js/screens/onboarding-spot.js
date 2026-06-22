@@ -3,14 +3,15 @@
 function renderSpotNumberScreen() {
   const totalSteps = state.spotExists ? 2 : ONBOARDING_STEPS;
   const savedProfiles = Storage.getSavedProfiles();
-  const savedProfilesHtml = savedProfiles.length > 0
-    ? `<div class="mt-8">
+  const savedProfilesHtml =
+    savedProfiles.length > 0
+      ? `<div class="mt-8">
         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide text-center mb-3">Ou reconnectez-vous</p>
         <div class="flex flex-wrap justify-center gap-2">
           ${savedProfiles.map(savedProfileButtonHtml).join("")}
         </div>
       </div>`
-    : "";
+      : "";
 
   renderShell({
     title: state.addingSpot ? "Ajouter une place" : "Votre place",
@@ -21,10 +22,14 @@ function renderSpotNumberScreen() {
       <p class="text-slate-500 mb-8">${state.addingSpot ? "Enregistrez un autre numéro de place pour y accéder depuis ce menu." : "Quel est votre numéro de place ?"} <span class="text-slate-400">(3 chiffres max)</span></p>
       <form id="spot-form" class="space-y-8">
         <div class="flex justify-center gap-3">
-          ${[0, 1, 2].map((i) => `
+          ${[0, 1, 2]
+            .map(
+              (i) => `
             <input type="text" inputmode="numeric" maxlength="1" data-digit="${i}"
               class="spot-digit w-20 h-24 text-center text-4xl font-extrabold bg-white ring-1 ring-slate-200 rounded-3xl shadow-soft focus:ring-2 focus:ring-brand-500 focus:outline-none transition">
-          `).join("")}
+          `,
+            )
+            .join("")}
         </div>
         ${stepNextOnlyHtml("Continuer")}
       </form>
@@ -132,7 +137,9 @@ function renderApartmentScreen() {
   const totalSteps = isConfirm ? 2 : ONBOARDING_STEPS;
   renderShell({
     title: isConfirm ? "Confirmer la place" : "Enregistrer la place",
-    subtitle: isConfirm ? `Étape 2 sur ${totalSteps}` : `Étape 2 sur ${ONBOARDING_STEPS}`,
+    subtitle: isConfirm
+      ? `Étape 2 sur ${totalSteps}`
+      : `Étape 2 sur ${ONBOARDING_STEPS}`,
     icon: "building-2",
     content: `
       <p class="text-slate-500 mb-5">${isConfirm ? "Confirmez votre numéro d'appartement pour accéder à cette place." : "Indiquez votre numéro d'appartement pour enregistrer cette place."}</p>
@@ -147,7 +154,9 @@ function renderApartmentScreen() {
   });
 
   bindStepBack(handleApartmentBack);
-  document.getElementById("apartment-form").addEventListener("submit", handleApartmentSubmit);
+  document
+    .getElementById("apartment-form")
+    .addEventListener("submit", handleApartmentSubmit);
 }
 
 function handleApartmentBack() {
@@ -245,14 +254,18 @@ function renderOnboardingPhoneScreen() {
     render();
   });
 
-  const phoneCtrl = bindPhoneInput(document.querySelector("[data-phone-input]"));
+  const phoneCtrl = bindPhoneInput(
+    document.querySelector("[data-phone-input]"),
+  );
 
-  document.getElementById("onboarding-phone-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const phone = readOptionalPhone(phoneCtrl);
-    if (phone === undefined) return;
-    await finishRegistration(phone);
-  });
+  document
+    .getElementById("onboarding-phone-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const phone = readOptionalPhone(phoneCtrl);
+      if (phone === undefined) return;
+      await finishRegistration(phone);
+    });
 
   document.getElementById("phone-skip").addEventListener("click", async () => {
     await finishRegistration(null);

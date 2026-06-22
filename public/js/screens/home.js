@@ -2,7 +2,9 @@
 
 async function loadHomeData() {
   const profile = Storage.getProfile();
-  const atDatetime = state.filterDatetime ? formatForApi(state.filterDatetime) : null;
+  const atDatetime = state.filterDatetime
+    ? formatForApi(state.filterDatetime)
+    : null;
   const [spotsData, alertsData] = await Promise.all([
     Backend.listSpots(profile?.number ?? null, atDatetime),
     Backend.getAlerts(),
@@ -26,10 +28,11 @@ function alertHtml(alert) {
 
 function notificationBannerHtml() {
   if (
-    !Notifications.supported()
-    || Notifications.isEnabled()
-    || Notifications.permission === "denied"
-  ) return "";
+    !Notifications.supported() ||
+    Notifications.isEnabled() ||
+    Notifications.permission === "denied"
+  )
+    return "";
 
   return `<div class="mb-3 bg-white ring-1 ring-amber-200 rounded-2xl p-4 shadow-soft">
       <div class="flex items-start gap-3 mb-3">
@@ -177,8 +180,12 @@ function homeSpotsListHtml(visibleSpots, profile, allSpots) {
       if (!aMine && bMine) return 1;
       return a.number.localeCompare(b.number, undefined, { numeric: true });
     });
-  const ownedVisible = sortWithParkingFirst(visibleSpots.filter((s) => ownedNumbers.has(s.number)));
-  const otherVisible = sortWithParkingFirst(visibleSpots.filter((s) => !ownedNumbers.has(s.number)));
+  const ownedVisible = sortWithParkingFirst(
+    visibleSpots.filter((s) => ownedNumbers.has(s.number)),
+  );
+  const otherVisible = sortWithParkingFirst(
+    visibleSpots.filter((s) => !ownedNumbers.has(s.number)),
+  );
   const showMultiOwnedUi = ownedNumbers.size > 1;
 
   if (showMultiOwnedUi && ownedVisible.length > 0) {
@@ -192,9 +199,10 @@ function homeSpotsListHtml(visibleSpots, profile, allSpots) {
 
 function homeSummaryHtml(allSpots, available) {
   if (allSpots.length === 0) return "";
-  const summaryText = available === 0
-    ? `Aucune place disponible · ${allSpots.length} enregistrée${allSpots.length > 1 ? "s" : ""}`
-    : `<span class="font-bold text-slate-800">${available}</span> place${available > 1 ? "s" : ""} dispo${available > 1 ? "s" : ""} sur ${allSpots.length}`;
+  const summaryText =
+    available === 0
+      ? `Aucune place disponible · ${allSpots.length} enregistrée${allSpots.length > 1 ? "s" : ""}`
+      : `<span class="font-bold text-slate-800">${available}</span> place${available > 1 ? "s" : ""} dispo${available > 1 ? "s" : ""} sur ${allSpots.length}`;
 
   return `<div class="flex items-center justify-between mb-4 px-1">
       <p class="text-sm text-slate-500">${summaryText}</p>
@@ -283,16 +291,18 @@ function bindHomeScreenActions(profile, allSpots) {
     });
   });
 
-  document.getElementById("refresh-btn")?.addEventListener("click", async () => {
-    const btn = document.getElementById("refresh-btn");
-    setButtonLoading(btn, true);
-    try {
-      await loadHomeData();
-      renderHomeScreen();
-    } catch (err) {
-      showError(err.message);
-    }
-  });
+  document
+    .getElementById("refresh-btn")
+    ?.addEventListener("click", async () => {
+      const btn = document.getElementById("refresh-btn");
+      setButtonLoading(btn, true);
+      try {
+        await loadHomeData();
+        renderHomeScreen();
+      } catch (err) {
+        showError(err.message);
+      }
+    });
 
   bindTabBar();
   bindNotificationEnableButton("home-enable-notifs", () => renderHomeScreen());
@@ -312,9 +322,9 @@ async function onParkClick(e, btn, allSpots) {
   }
   const spot = allSpots.find((s) => s.number === number) || null;
   const myPhone =
-    state.mySpot?.phone
-    || allSpots.find((s) => s.number === profile.number)?.phone
-    || "";
+    state.mySpot?.phone ||
+    allSpots.find((s) => s.number === profile.number)?.phone ||
+    "";
   showParkConfirmDialog(spot || { number }, myPhone, async (phone) => {
     setButtonLoading(btn, true);
     try {

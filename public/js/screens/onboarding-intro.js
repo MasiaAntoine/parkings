@@ -72,6 +72,10 @@ function renderOnboardingNotificationsScreen() {
     "onboarding-enable-notifs",
     renderOnboardingNotificationsScreen,
   );
-  document.getElementById("notif-intro-ok").addEventListener("click", finishOnboardingToHome);
-  document.getElementById("notif-intro-skip")?.addEventListener("click", finishOnboardingToHome);
+  document
+    .getElementById("notif-intro-ok")
+    .addEventListener("click", finishOnboardingToHome);
+  document
+    .getElementById("notif-intro-skip")
+    ?.addEventListener("click", finishOnboardingToHome);
 }

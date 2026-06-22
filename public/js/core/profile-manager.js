@@ -2,8 +2,13 @@
 
 async function afterProfileSwitch() {
   const keepScreens = new Set([
-    "home", "my-spot", "schedules", "trip",
-    "trip-form", "phone", "change-number",
+    "home",
+    "my-spot",
+    "schedules",
+    "trip",
+    "trip-form",
+    "phone",
+    "change-number",
   ]);
 
   if (state.screenBeforeProfileSwitch) {
@@ -78,7 +83,10 @@ function finishAddSpotFlow() {
 
 function cancelAddSpot() {
   if (state.previousProfile) {
-    Storage.setProfile(state.previousProfile.number, state.previousProfile.apartment);
+    Storage.setProfile(
+      state.previousProfile.number,
+      state.previousProfile.apartment,
+    );
   }
   state.addingSpot = false;
   state.previousProfile = null;

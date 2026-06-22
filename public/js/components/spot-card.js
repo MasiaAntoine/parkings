@@ -1,6 +1,9 @@
 // Composants d'affichage d'une place : meta (horaires/déplacements/dispo) + téléphone contact.
 
-function spotContactPhoneHtml(spot, { className = "mt-2", ownerContext = false } = {}) {
+function spotContactPhoneHtml(
+  spot,
+  { className = "mt-2", ownerContext = false } = {},
+) {
   if (spot.status === "occupied" && spot.parked_contact_phone) {
     if (ownerContext) {
       return `<div class="${className}">
@@ -23,7 +26,11 @@ function spotMetaLines(spot) {
   const lines = [];
 
   if (spot.trip_line) {
-    lines.push({ icon: "plane", text: spot.trip_line, className: "text-brand-700" });
+    lines.push({
+      icon: "plane",
+      text: spot.trip_line,
+      className: "text-brand-700",
+    });
   }
 
   if (spot.schedule_lines?.length) {

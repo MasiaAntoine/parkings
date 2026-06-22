@@ -8,9 +8,10 @@ async function loadMyTrips() {
   }
 
   const owned = Storage.getOwnedProfiles();
-  const profiles = owned.length > 0
-    ? owned
-    : [{ number: profile.number, apartment: profile.apartment }];
+  const profiles =
+    owned.length > 0
+      ? owned
+      : [{ number: profile.number, apartment: profile.apartment }];
 
   const spots = await Promise.all(
     profiles.map(async (p) => ({
@@ -81,12 +82,15 @@ function tripFormBannerHtml(linkedSpots) {
 
 function renderTripFormScreen() {
   const editing = state.editingTrip;
-  const linkedSpots = editing?.linked_spots?.length > 1 ? editing.linked_spots : null;
+  const linkedSpots =
+    editing?.linked_spots?.length > 1 ? editing.linked_spots : null;
   const defaults = tripFormDefaults(editing);
 
   const subtitle = linkedSpots
     ? `Places ${linkedSpots.join(", ")}`
-    : editing ? "Modifier les dates" : "Libérez votre place";
+    : editing
+      ? "Modifier les dates"
+      : "Libérez votre place";
 
   renderShell({
     title: editing ? "Modifier le déplacement" : "Nouveau déplacement",
@@ -119,13 +123,16 @@ function renderTripFormScreen() {
   });
 
   bindTabBar();
-  document.getElementById("trip-form").addEventListener("submit", onTripFormSubmit);
+  document
+    .getElementById("trip-form")
+    .addEventListener("submit", onTripFormSubmit);
 }
 
 async function onTripFormSubmit(e) {
   e.preventDefault();
   const editing = state.editingTrip;
-  const linkedSpots = editing?.linked_spots?.length > 1 ? editing.linked_spots : null;
+  const linkedSpots =
+    editing?.linked_spots?.length > 1 ? editing.linked_spots : null;
   const profile = Storage.getProfile();
   const departAt = formatForApi(document.getElementById("depart-at").value);
   const returnAt = formatForApi(document.getElementById("return-at").value);
@@ -134,7 +141,14 @@ async function onTripFormSubmit(e) {
 
   try {
     if (editing) {
-      await submitTripUpdate(editing, profile, departAt, returnAt, linkedSpots, btn);
+      await submitTripUpdate(
+        editing,
+        profile,
+        departAt,
+        returnAt,
+        linkedSpots,
+        btn,
+      );
     } else {
       const targets = getSelectedApplyTargets("trip");
       if (!targets) {
@@ -154,7 +168,14 @@ async function onTripFormSubmit(e) {
   }
 }
 
-async function submitTripUpdate(editing, profile, departAt, returnAt, linkedSpots, btn) {
+async function submitTripUpdate(
+  editing,
+  profile,
+  departAt,
+  returnAt,
+  linkedSpots,
+  btn,
+) {
   const spotNumber = editing.spot_number || profile.number;
   const creds = ownedProfileCredentials(spotNumber, profile);
   if (!creds?.apartment) {
@@ -162,9 +183,17 @@ async function submitTripUpdate(editing, profile, departAt, returnAt, linkedSpot
     setButtonLoading(btn, false);
     throw new Error("Profil de place introuvable.");
   }
-  await Backend.updateTrip(spotNumber, creds.apartment, editing.id, departAt, returnAt);
+  await Backend.updateTrip(
+    spotNumber,
+    creds.apartment,
+    editing.id,
+    departAt,
+    returnAt,
+  );
   if (linkedSpots) {
-    showToast(`Déplacement modifié pour ${linkedSpots.length} places (${linkedSpots.join(", ")}).`);
+    showToast(
+      `Déplacement modifié pour ${linkedSpots.length} places (${linkedSpots.join(", ")}).`,
+    );
   } else {
     showToast("Déplacement modifié.");
   }
@@ -174,7 +203,13 @@ async function submitTripCreate(targets, departAt, returnAt) {
   const linkGroup = targets.length > 1 ? crypto.randomUUID() : null;
   await Promise.all(
     targets.map((target) =>
-      Backend.createTrip(target.number, target.apartment, departAt, returnAt, linkGroup),
+      Backend.createTrip(
+        target.number,
+        target.apartment,
+        departAt,
+        returnAt,
+        linkGroup,
+      ),
     ),
   );
   applyTargetsToast("Déplacement créé", targets);

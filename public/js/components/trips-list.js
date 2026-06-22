@@ -8,7 +8,10 @@ function collectTripsFromSpot(spot, spotNumber) {
     byId.set(trip.id, { ...trip, spot_number: spotNumber });
   }
   if (spot.active_trip && !byId.has(spot.active_trip.id)) {
-    byId.set(spot.active_trip.id, { ...spot.active_trip, spot_number: spotNumber });
+    byId.set(spot.active_trip.id, {
+      ...spot.active_trip,
+      spot_number: spotNumber,
+    });
   }
 
   return Array.from(byId.values());

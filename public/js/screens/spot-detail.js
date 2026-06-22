@@ -27,7 +27,8 @@ function spotDetailTripSectionHtml(spot) {
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Déplacements à venir</p>
         <div class="space-y-2">
           ${spot.upcoming_trips
-            .map((t) => `
+            .map(
+              (t) => `
             <div class="flex items-start gap-2 py-2 border-b border-slate-100 last:border-0">
               ${icon("plane", "w-4 h-4 text-brand-500 shrink-0 mt-0.5")}
               <div>
@@ -35,7 +36,8 @@ function spotDetailTripSectionHtml(spot) {
                 <p class="text-xs text-slate-400">au ${formatDateTime(t.return_at)}</p>
               </div>
             </div>
-          `)
+          `,
+            )
             .join("")}
         </div>
       </div>

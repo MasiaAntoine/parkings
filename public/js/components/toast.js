@@ -23,8 +23,11 @@ function showToast(message, variant = "success") {
   const existing = document.getElementById("app-toast");
   if (existing) existing.remove();
 
-  const { bg, icon: iconName, shadow } =
-    TOAST_VARIANTS[variant] ?? TOAST_VARIANTS.success;
+  const {
+    bg,
+    icon: iconName,
+    shadow,
+  } = TOAST_VARIANTS[variant] ?? TOAST_VARIANTS.success;
 
   const toast = document.createElement("div");
   toast.id = "app-toast";

@@ -76,18 +76,25 @@ function filterCustomPanelHtml(filterDate, filterTime) {
 }
 
 function filterBarHtml() {
-  const activePreset = state.filterPreset || detectFilterPreset(state.filterDatetime);
-  const { date: filterDate, time: filterTime } = splitFilterDatetime(state.filterDatetime);
+  const activePreset =
+    state.filterPreset || detectFilterPreset(state.filterDatetime);
+  const { date: filterDate, time: filterTime } = splitFilterDatetime(
+    state.filterDatetime,
+  );
   const hasActiveFilter = activePreset !== "now";
 
-  const customPanel = activePreset === "custom" ? filterCustomPanelHtml(filterDate, filterTime) : "";
+  const customPanel =
+    activePreset === "custom"
+      ? filterCustomPanelHtml(filterDate, filterTime)
+      : "";
 
-  const summary = hasActiveFilter && state.filterDatetime
-    ? `<div class="mt-3 flex items-center gap-2 bg-brand-50 ring-1 ring-brand-100 rounded-xl px-3 py-2.5">
+  const summary =
+    hasActiveFilter && state.filterDatetime
+      ? `<div class="mt-3 flex items-center gap-2 bg-brand-50 ring-1 ring-brand-100 rounded-xl px-3 py-2.5">
         ${icon("clock", "w-4 h-4 text-brand-600 shrink-0")}
         <p class="text-xs font-medium text-brand-800 flex-1">Disponibilités au <span class="font-bold">${escapeHtml(formatDateTime(state.filterDatetime.replace("T", " ")))}</span></p>
       </div>`
-    : `<p class="mt-3 text-xs text-slate-400 flex items-center gap-1.5">${icon("info", "w-3.5 h-3.5")}<span>Affichage en temps réel — choisissez un créneau pour anticiper</span></p>`;
+      : `<p class="mt-3 text-xs text-slate-400 flex items-center gap-1.5">${icon("info", "w-3.5 h-3.5")}<span>Affichage en temps réel — choisissez un créneau pour anticiper</span></p>`;
 
   return `
     <div class="mb-4 bg-white ring-1 ring-slate-200 rounded-2xl p-4 shadow-soft">
@@ -120,8 +127,13 @@ function bindFilterBar() {
       state.filterPreset = preset;
 
       if (preset === "custom") {
-        if (!state.filterDatetime || detectFilterPreset(state.filterDatetime) !== "custom") {
-          state.filterDatetime = getFilterPresetDatetime("tomorrow_am") || toDatetimeLocal(new Date());
+        if (
+          !state.filterDatetime ||
+          detectFilterPreset(state.filterDatetime) !== "custom"
+        ) {
+          state.filterDatetime =
+            getFilterPresetDatetime("tomorrow_am") ||
+            toDatetimeLocal(new Date());
         }
         renderHomeScreen();
         return;
@@ -132,11 +144,13 @@ function bindFilterBar() {
     };
   });
 
-  document.getElementById("filter-clear")?.addEventListener("click", async () => {
-    state.filterPreset = "now";
-    state.filterDatetime = "";
-    await applyFilterAndReload();
-  });
+  document
+    .getElementById("filter-clear")
+    ?.addEventListener("click", async () => {
+      state.filterPreset = "now";
+      state.filterDatetime = "";
+      await applyFilterAndReload();
+    });
 
   const onCustomChange = async () => {
     const date = document.getElementById("filter-date")?.value;
@@ -146,6 +160,10 @@ function bindFilterBar() {
     if (state.filterDatetime) await applyFilterAndReload();
   };
 
-  document.getElementById("filter-date")?.addEventListener("change", onCustomChange);
-  document.getElementById("filter-time")?.addEventListener("change", onCustomChange);
+  document
+    .getElementById("filter-date")
+    ?.addEventListener("change", onCustomChange);
+  document
+    .getElementById("filter-time")
+    ?.addEventListener("change", onCustomChange);
 }

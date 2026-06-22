@@ -18,14 +18,18 @@ function renderPhoneScreen() {
       <form id="phone-form" class="space-y-4">
         ${phoneInputHtml(current)}
         <p class="text-center text-xs text-slate-400">Format français · 10 chiffres</p>
-        ${current
-          ? `<button type="button" id="phone-delete" class="w-full inline-flex items-center justify-center gap-2 text-rose-600 font-semibold rounded-2xl py-3.5 ring-1 ring-rose-200 bg-rose-50 active:scale-[0.98] transition">${icon("trash-2", "w-5 h-5")}<span>Supprimer mon numéro</span></button>`
-          : ""}
+        ${
+          current
+            ? `<button type="button" id="phone-delete" class="w-full inline-flex items-center justify-center gap-2 text-rose-600 font-semibold rounded-2xl py-3.5 ring-1 ring-rose-200 bg-rose-50 active:scale-[0.98] transition">${icon("trash-2", "w-5 h-5")}<span>Supprimer mon numéro</span></button>`
+            : ""
+        }
       </form>
     `,
   });
 
-  const phoneCtrl = bindPhoneInput(document.querySelector("[data-phone-input]"));
+  const phoneCtrl = bindPhoneInput(
+    document.querySelector("[data-phone-input]"),
+  );
 
   const savePhone = async (phone) => {
     const profile = Storage.getProfile();
@@ -42,17 +46,21 @@ function renderPhoneScreen() {
     }
   };
 
-  document.getElementById("phone-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const phone = readOptionalPhone(phoneCtrl);
-    if (phone === undefined) return;
-    await savePhone(phone);
-  });
+  document
+    .getElementById("phone-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const phone = readOptionalPhone(phoneCtrl);
+      if (phone === undefined) return;
+      await savePhone(phone);
+    });
 
-  document.getElementById("phone-delete")?.addEventListener("click", async () => {
-    phoneCtrl.clear();
-    await savePhone(null);
-  });
+  document
+    .getElementById("phone-delete")
+    ?.addEventListener("click", async () => {
+      phoneCtrl.clear();
+      await savePhone(null);
+    });
 }
 
 function renderChangeNumberScreen() {
@@ -76,26 +84,32 @@ function renderChangeNumberScreen() {
     `,
   });
 
-  document.getElementById("change-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const profile = Storage.getProfile();
-    const raw = document.getElementById("new-number").value.trim();
-    if (!raw) {
-      showError("Numéro requis.");
-      return;
-    }
-    const newNumber = raw.padStart(3, "0");
-    const btn = document.getElementById("change-submit");
-    setButtonLoading(btn, true);
+  document
+    .getElementById("change-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const profile = Storage.getProfile();
+      const raw = document.getElementById("new-number").value.trim();
+      if (!raw) {
+        showError("Numéro requis.");
+        return;
+      }
+      const newNumber = raw.padStart(3, "0");
+      const btn = document.getElementById("change-submit");
+      setButtonLoading(btn, true);
 
-    try {
-      await Backend.changeNumber(profile.number, profile.apartment, newNumber);
-      Storage.updateSpotNumber(newNumber);
-      state.screen = "my-spot";
-      await render();
-    } catch (err) {
-      showError(err.message);
-      setButtonLoading(btn, false);
-    }
-  });
+      try {
+        await Backend.changeNumber(
+          profile.number,
+          profile.apartment,
+          newNumber,
+        );
+        Storage.updateSpotNumber(newNumber);
+        state.screen = "my-spot";
+        await render();
+      } catch (err) {
+        showError(err.message);
+        setButtonLoading(btn, false);
+      }
+    });
 }

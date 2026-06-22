@@ -64,30 +64,34 @@ function bindMySpotActions(profile) {
     render();
   });
 
-  document.getElementById("change-number-btn")?.addEventListener("click", () => {
-    state.screen = "change-number";
-    render();
-  });
-
-  document.getElementById("delete-spot-btn")?.addEventListener("click", async () => {
-    const confirmed = window.confirm(
-      `Supprimer définitivement la place ${profile?.number} ? Cette action est irréversible.`,
-    );
-    if (!confirmed) return;
-    const btn = document.getElementById("delete-spot-btn");
-    setButtonLoading(btn, true);
-    try {
-      await Backend.deleteSpot(profile.number, profile.apartment);
-      Storage.removeSavedProfile(profile.number);
-      Storage.logout();
-      state.mySpot = null;
-      state.spots = [];
-      state.screen = "spot";
+  document
+    .getElementById("change-number-btn")
+    ?.addEventListener("click", () => {
+      state.screen = "change-number";
       render();
-    } catch (err) {
-      showError(err.message);
-    }
-  });
+    });
+
+  document
+    .getElementById("delete-spot-btn")
+    ?.addEventListener("click", async () => {
+      const confirmed = window.confirm(
+        `Supprimer définitivement la place ${profile?.number} ? Cette action est irréversible.`,
+      );
+      if (!confirmed) return;
+      const btn = document.getElementById("delete-spot-btn");
+      setButtonLoading(btn, true);
+      try {
+        await Backend.deleteSpot(profile.number, profile.apartment);
+        Storage.removeSavedProfile(profile.number);
+        Storage.logout();
+        state.mySpot = null;
+        state.spots = [];
+        state.screen = "spot";
+        render();
+      } catch (err) {
+        showError(err.message);
+      }
+    });
 
   bindNotificationToggleCard(renderMySpotScreen);
   bindTabBar();

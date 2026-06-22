@@ -110,7 +110,9 @@ const Storage = {
 
   // Numéros de place sauvegardés (pour l'affichage)
   getSavedProfiles() {
-    return normalizeSavedProfiles(this.get()?.saved_profiles).map((p) => p.number);
+    return normalizeSavedProfiles(this.get()?.saved_profiles).map(
+      (p) => p.number,
+    );
   },
 
   // Places connectées sur cet appareil (numéro + appartement connus)
@@ -123,9 +125,9 @@ const Storage = {
   removeSavedProfile(number) {
     const session = this.get();
     if (!session) return;
-    session.saved_profiles = normalizeSavedProfiles(session.saved_profiles).filter(
-      (p) => p.number !== number,
-    );
+    session.saved_profiles = normalizeSavedProfiles(
+      session.saved_profiles,
+    ).filter((p) => p.number !== number);
     this.save(session);
   },
 

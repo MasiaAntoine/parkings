@@ -28,7 +28,10 @@ function renderSchedulesScreen() {
 
   const goBackFromSchedules = () => {
     state.schedulesNote = "";
-    state.screen = state.afterSchedules === "my-spot" ? "my-spot" : state.schedulesBackScreen;
+    state.screen =
+      state.afterSchedules === "my-spot"
+        ? "my-spot"
+        : state.schedulesBackScreen;
     render();
   };
 
@@ -44,14 +47,21 @@ function renderSchedulesScreen() {
 
   renderShell({
     title: "Disponibilités",
-    subtitle: isOnboarding ? `Étape 4 sur ${ONBOARDING_STEPS}` : "Quand votre place est libre",
+    subtitle: isOnboarding
+      ? `Étape 4 sur ${ONBOARDING_STEPS}`
+      : "Quand votre place est libre",
     icon: "calendar-range",
     showLogout: !isOnboarding,
     content: `
       ${note ? `<div class="mb-5 text-sm text-brand-800 bg-brand-50 ring-1 ring-brand-100 rounded-2xl px-4 py-3 flex items-start gap-2.5">${icon("info", "w-5 h-5 text-brand-500 shrink-0 mt-0.5")}<span>${escapeHtml(note)}</span></div>` : ""}
       <p class="text-slate-500 mb-5">Activez les jours et précisez les plages horaires. Sans jour sélectionné, la place reste hors plage (sauf en déplacement).</p>
       <form id="schedules-form" class="space-y-3">
-        ${DAYS.map((day) => dayScheduleRowHtml(day, schedules.find((s) => s.day_of_week === day.id))).join("")}
+        ${DAYS.map((day) =>
+          dayScheduleRowHtml(
+            day,
+            schedules.find((s) => s.day_of_week === day.id),
+          ),
+        ).join("")}
         ${applyToSpotsCheckboxesHtml("schedules")}
       </form>
     `,
@@ -59,13 +69,17 @@ function renderSchedulesScreen() {
   });
 
   if (isOnboarding) {
-    document.getElementById("schedules-back")?.addEventListener("click", goBackFromSchedules);
+    document
+      .getElementById("schedules-back")
+      ?.addEventListener("click", goBackFromSchedules);
   } else {
     bindTabBar();
   }
 
   bindScheduleCheckboxes();
-  document.getElementById("schedules-form").addEventListener("submit", onSchedulesSubmit);
+  document
+    .getElementById("schedules-form")
+    .addEventListener("submit", onSchedulesSubmit);
 }
 
 function bindScheduleCheckboxes() {
@@ -131,7 +145,9 @@ async function persistSchedules(newSchedules, targets) {
     return;
   }
 
-  const resolved = targets ?? [{ number: profile.number, apartment: profile.apartment }];
+  const resolved = targets ?? [
+    { number: profile.number, apartment: profile.apartment },
+  ];
 
   await Promise.all(
     resolved.map((target) =>

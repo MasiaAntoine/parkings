@@ -55,10 +55,12 @@ function showNeighborDisclaimerDialog() {
   document.body.appendChild(dialog);
   refreshIcons();
 
-  document.getElementById("neighbor-disclaimer-ok-btn").addEventListener("click", () => {
-    Storage.setNeighborDisclaimerSeen();
-    dialog.remove();
-  });
+  document
+    .getElementById("neighbor-disclaimer-ok-btn")
+    .addEventListener("click", () => {
+      Storage.setNeighborDisclaimerSeen();
+      dialog.remove();
+    });
 }
 
 function showParkConfirmDialog(spot, defaultPhone, onConfirm) {
@@ -95,20 +97,24 @@ function showParkConfirmDialog(spot, defaultPhone, onConfirm) {
   const phoneCtrl = bindPhoneInput(dialog.querySelector("[data-phone-input]"));
   if (!defaultPhone) phoneCtrl.focus();
 
-  document.getElementById("park-cancel-btn").addEventListener("click", () => dialog.remove());
-  document.getElementById("park-confirm-btn").addEventListener("click", async () => {
-    const phone = readRequiredPhone(phoneCtrl);
-    if (phone === undefined) return;
-    const btn = document.getElementById("park-confirm-btn");
-    setButtonLoading(btn, true);
-    try {
-      await onConfirm(phone);
-      dialog.remove();
-    } catch (err) {
-      showError(err.message);
-      setButtonLoading(btn, false);
-    }
-  });
+  document
+    .getElementById("park-cancel-btn")
+    .addEventListener("click", () => dialog.remove());
+  document
+    .getElementById("park-confirm-btn")
+    .addEventListener("click", async () => {
+      const phone = readRequiredPhone(phoneCtrl);
+      if (phone === undefined) return;
+      const btn = document.getElementById("park-confirm-btn");
+      setButtonLoading(btn, true);
+      try {
+        await onConfirm(phone);
+        dialog.remove();
+      } catch (err) {
+        showError(err.message);
+        setButtonLoading(btn, false);
+      }
+    });
   dialog.addEventListener("click", (e) => {
     if (e.target === dialog) dialog.remove();
   });
@@ -140,8 +146,10 @@ function showProfileMenu(anchorBtn) {
 
   const dropdown = document.createElement("div");
   dropdown.id = "profile-dropdown";
-  dropdown.style.cssText = "position:absolute;top:100%;right:0;margin-top:6px;width:220px;z-index:100;";
-  dropdown.className = "bg-white ring-1 ring-slate-200 rounded-2xl shadow-glow overflow-hidden";
+  dropdown.style.cssText =
+    "position:absolute;top:100%;right:0;margin-top:6px;width:220px;z-index:100;";
+  dropdown.className =
+    "bg-white ring-1 ring-slate-200 rounded-2xl shadow-glow overflow-hidden";
   dropdown.innerHTML = `
     ${others.map(profileSwitchButtonHtml).join("")}
     ${others.length > 0 ? '<div class="border-t border-slate-100"></div>' : ""}
@@ -183,10 +191,12 @@ function bindProfileMenuActions(dropdown, anchorBtn) {
     });
   });
 
-  document.getElementById("dropdown-add-spot")?.addEventListener("click", () => {
-    dropdown.remove();
-    startAddSpot();
-  });
+  document
+    .getElementById("dropdown-add-spot")
+    ?.addEventListener("click", () => {
+      dropdown.remove();
+      startAddSpot();
+    });
 
   document.getElementById("dropdown-logout")?.addEventListener("click", () => {
     dropdown.remove();
