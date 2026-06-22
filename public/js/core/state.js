@@ -25,6 +25,7 @@ const state = {
   addingSpot: false,
   previousProfile: null,
   showTripIntroNext: false,
+  showNeighborDisclaimerOnHome: false,
 };
 
 function viewerSpotNumber() {

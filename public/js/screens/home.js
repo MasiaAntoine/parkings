@@ -238,7 +238,7 @@ function renderHomeScreen() {
   });
 
   bindHomeScreenActions(profile, allSpots);
-  showNeighborDisclaimerDialog();
+  maybeShowNeighborDisclaimerOnHome();
 }
 
 function bindHomeScreenActions(profile, allSpots) {

@@ -1,5 +1,29 @@
 // Dialogs modaux : confirmation de stationnement + menu profil + avertissement voisins.
 
+function scheduleNeighborDisclaimerOnHome() {
+  if (!Storage.hasSeenNeighborDisclaimer()) {
+    state.showNeighborDisclaimerOnHome = true;
+  }
+}
+
+function finishOnboardingToHome() {
+  Storage.markOnboardingComplete();
+  scheduleNeighborDisclaimerOnHome();
+  state.screen = "home";
+  render();
+}
+
+function maybeShowNeighborDisclaimerOnHome() {
+  if (state.screen !== "home") return;
+  if (!state.showNeighborDisclaimerOnHome) return;
+  if (Storage.hasSeenNeighborDisclaimer()) {
+    state.showNeighborDisclaimerOnHome = false;
+    return;
+  }
+  state.showNeighborDisclaimerOnHome = false;
+  showNeighborDisclaimerDialog();
+}
+
 function showNeighborDisclaimerDialog() {
   if (Storage.hasSeenNeighborDisclaimer()) return;
   document.getElementById("neighbor-disclaimer-dialog")?.remove();

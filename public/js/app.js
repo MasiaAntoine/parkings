@@ -126,6 +126,9 @@ async function init() {
     if (profile && !Storage.getSavedProfileEntry(profile.number)?.apartment) {
       Storage.setProfile(profile.number, profile.apartment);
     }
+    if (Storage.isOnboardingComplete()) {
+      scheduleNeighborDisclaimerOnHome();
+    }
     state.screen = "home";
   } else {
     const session = Storage.get();

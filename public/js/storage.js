@@ -184,4 +184,22 @@ const Storage = {
     session.neighbor_disclaimer_seen = true;
     this.save(session);
   },
+
+  isOnboardingComplete() {
+    const session = this.get() || {};
+    if (session.onboarding_completed === false) return false;
+    return !!(session.spot_number && session.apartment);
+  },
+
+  markOnboardingInProgress() {
+    const session = this.get() || {};
+    session.onboarding_completed = false;
+    this.save(session);
+  },
+
+  markOnboardingComplete() {
+    const session = this.get() || {};
+    session.onboarding_completed = true;
+    this.save(session);
+  },
 };

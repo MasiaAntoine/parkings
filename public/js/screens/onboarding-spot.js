@@ -81,6 +81,8 @@ function bindQuickConnectButtons() {
         if (entry?.apartment) {
           Storage.setProfile(number, entry.apartment);
           state.switchingProfile = false;
+          Storage.markOnboardingComplete();
+          scheduleNeighborDisclaimerOnHome();
           state.screen = "home";
           await render();
           return;
@@ -184,7 +186,7 @@ async function handleApartmentSubmit(e) {
       state.onboardingApartment = apartment;
       state.screen = "onboarding-phone";
     }
-    render();
+    if (state.screen !== "home") render();
   } catch (err) {
     showError(err.message);
     setButtonLoading(btn, false);
@@ -208,9 +210,10 @@ async function handleApartmentConfirm(apartment) {
     state.schedulesNote =
       "Ces horaires correspondent à vos absences habituelles (ex. horaires de travail). Ils permettent à vos voisins de savoir quand votre place est disponible.";
     state.showTripIntroNext = true;
+    Storage.markOnboardingInProgress();
     state.screen = "schedules";
   } else {
-    state.screen = "home";
+    finishOnboardingToHome();
   }
 }
 
@@ -271,11 +274,12 @@ async function finishRegistration(phone) {
       state.schedulesBackScreen = "onboarding-phone";
       state.schedulesNote = "";
       state.showTripIntroNext = true;
+      Storage.markOnboardingInProgress();
       state.screen = "schedules";
-    } else {
-      state.screen = "home";
+      render();
+      return;
     }
-    render();
+    finishOnboardingToHome();
   } catch (err) {
     showError(err.message);
   }
