@@ -1,4 +1,4 @@
-const CACHE = "parking-v30";
+const CACHE = "parking-v34";
 const ASSETS = [
   "/",
   "/index.php",

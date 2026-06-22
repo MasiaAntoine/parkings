@@ -65,7 +65,7 @@ Le numéro d'appartement n'est **pas** une donnée d'affichage. C'est un **secon
 | Question                                  | Décision                                                                                       |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | Quand une place est-elle « disponible » ? | Dans sa **plage horaire** (ou en mode déplacement) **ET** personne n'a cliqué « je suis garé » |
-| Que voit-on sur l'accueil ?               | **Toutes les places enregistrées** avec leur statut                                            |
+| Que voit-on sur l'accueil ?               | Uniquement les places **disponibles** et **occupées** (les *hors plage* sont masquées)         |
 
 
 **Statuts possibles** :
@@ -160,7 +160,7 @@ Bouton profil (header) → Déconnexion · Switch profil · Ajouter une place
 5. **Configuration horaires** — jours de la semaine + plages début/fin (inputs **toujours visibles**, grisés si jour décoché) ; possibilité d'**appliquer sur plusieurs places** si multi-profils
 6. **Onboarding déplacement** — écran d'explication du concept (by-pass des horaires)
 7. **Onboarding notifications** — proposition d'activer les alertes « retour anticipé »
-8. **Accueil** — barre de filtre date/heure, **toutes les places enregistrées** (y compris hors plage, atténuées visuellement), cartes cliquables, dialog de confirmation avant de se garer, bandeaux d'alerte, **skeletons** de chargement
+8. **Accueil** — barre de filtre date/heure, places **disponibles et occupées** uniquement (hors plage masquées), cartes cliquables, dialog de confirmation avant de se garer, bandeaux d'alerte, **skeletons** de chargement
 9. **Détail d'une place** — plages horaires détaillées par jour + déplacements à venir + téléphone
 10. **Ma place** — statut, téléphone, **toggle notifications**, changement de numéro, **suppression définitive de la place**
 11. **Déplacement** — liste des absences à venir (modifier/annuler), formulaire départ/retour ; déplacements **liés** si créés sur plusieurs places en une fois

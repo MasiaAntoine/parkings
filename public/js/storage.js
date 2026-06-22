@@ -174,4 +174,14 @@ const Storage = {
     session.known_alert_ids = ids;
     this.save(session);
   },
+
+  hasSeenNeighborDisclaimer() {
+    return (this.get() || {}).neighbor_disclaimer_seen === true;
+  },
+
+  setNeighborDisclaimerSeen() {
+    const session = this.get() || {};
+    session.neighbor_disclaimer_seen = true;
+    this.save(session);
+  },
 };

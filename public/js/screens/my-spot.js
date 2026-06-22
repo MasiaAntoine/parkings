@@ -13,8 +13,8 @@ function mySpotOccupiedBannerHtml(spot) {
     ? ` (place ${escapeHtml(spot.parked_by_spot_number)})`
     : "";
   return `<div class="${CARD} bg-amber-50 ring-1 ring-amber-200">
-      <p class="text-sm font-semibold text-amber-900 flex items-center gap-2 mb-2">${icon("car", "w-4 h-4 shrink-0")}<span>Quelqu'un est garé sur votre place${who}</span></p>
-      ${spotContactPhoneHtml(spot, { className: "" })}
+      <p class="text-sm font-semibold text-amber-900 flex items-center gap-2 mb-3">${icon("car", "w-4 h-4 shrink-0")}<span>Quelqu'un est garé sur votre place${who}</span></p>
+      ${spotContactPhoneHtml(spot, { className: "", ownerContext: true })}
     </div>`;
 }
 

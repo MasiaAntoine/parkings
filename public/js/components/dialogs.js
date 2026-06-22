@@ -1,4 +1,41 @@
-// Dialogs modaux : confirmation de stationnement + menu profil.
+// Dialogs modaux : confirmation de stationnement + menu profil + avertissement voisins.
+
+function showNeighborDisclaimerDialog() {
+  if (Storage.hasSeenNeighborDisclaimer()) return;
+  document.getElementById("neighbor-disclaimer-dialog")?.remove();
+
+  const dialog = document.createElement("div");
+  dialog.id = "neighbor-disclaimer-dialog";
+  dialog.className =
+    "fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm";
+  dialog.innerHTML = `
+    <div class="w-full max-w-md bg-white rounded-3xl p-6 shadow-glow max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center gap-3 mb-4">
+        ${icon("shield-alert", "w-6 h-6 text-amber-600 shrink-0")}
+        <h3 class="text-lg font-bold text-slate-900">Usage entre voisins</h3>
+      </div>
+      <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
+        <p>
+          <strong class="text-slate-800">Crédit Agricole Immobilier</strong> refuse le partage des places de parking entre résidents.
+        </p>
+        <p>
+          Cette application doit donc rester <strong class="text-slate-800">strictement entre voisins</strong> de la résidence — ne la partagez pas en dehors.
+        </p>
+        <p>
+          Je me <strong class="text-slate-800">dégage de toute responsabilité</strong> en cas d'utilisation non conforme.
+        </p>
+      </div>
+      <button id="neighbor-disclaimer-ok-btn" class="${BTN_PRIMARY} w-full mt-6 py-3.5">${btnContent("check", "J'ai compris")}</button>
+    </div>
+  `;
+  document.body.appendChild(dialog);
+  refreshIcons();
+
+  document.getElementById("neighbor-disclaimer-ok-btn").addEventListener("click", () => {
+    Storage.setNeighborDisclaimerSeen();
+    dialog.remove();
+  });
+}
 
 function showParkConfirmDialog(spot, defaultPhone, onConfirm) {
   const hint = spot.availability_hint || "";

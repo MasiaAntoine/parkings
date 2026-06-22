@@ -97,7 +97,7 @@
     <div id="app" class="relative mx-auto flex min-h-dvh w-full max-w-md flex-col"></div>
     <?php
     // Cache-busting partagé pour tous les scripts JS modulaires.
-    $jsVersion = '42';
+    $jsVersion = '49';
     $jsScripts = [
         'js/storage.js',
         'js/backend.js',

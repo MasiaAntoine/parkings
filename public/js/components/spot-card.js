@@ -1,7 +1,13 @@
 // Composants d'affichage d'une place : meta (horaires/déplacements/dispo) + téléphone contact.
 
-function spotContactPhoneHtml(spot, { className = "mt-2" } = {}) {
+function spotContactPhoneHtml(spot, { className = "mt-2", ownerContext = false } = {}) {
   if (spot.status === "occupied" && spot.parked_contact_phone) {
+    if (ownerContext) {
+      return `<div class="${className}">
+        <p class="text-sm text-amber-800 mb-2">En cas de problème, voici le numéro de la personne garée sur votre place&nbsp;:</p>
+        <a href="${phoneTelHref(spot.parked_contact_phone)}" class="inline-flex items-center gap-2 text-base text-brand-700 font-bold active:scale-95 transition">${icon("phone", "w-5 h-5 shrink-0")}<span>${escapeHtml(spot.parked_contact_phone)}</span></a>
+      </div>`;
+    }
     const who = spot.parked_by_spot_number
       ? `Place ${spot.parked_by_spot_number}`
       : "Personne garée";

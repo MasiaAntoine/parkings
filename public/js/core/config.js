@@ -45,7 +45,11 @@ const CARD = "bg-white rounded-3xl p-5 shadow-soft ring-1 ring-slate-900/5";
 const TOAST_VARIANTS = {
   success: { bg: "bg-emerald-600", icon: "check", shadow: "shadow-soft" },
   error: { bg: "bg-rose-600", icon: "circle-alert", shadow: "shadow-glow" },
-  warning: { bg: "bg-amber-600", icon: "triangle-alert", shadow: "shadow-soft" },
+  warning: {
+    bg: "bg-amber-600",
+    icon: "triangle-alert",
+    shadow: "shadow-soft",
+  },
   info: { bg: "bg-brand-600", icon: "info", shadow: "shadow-soft" },
 };
 

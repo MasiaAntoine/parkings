@@ -102,11 +102,17 @@ async function renderSpotDetailWithLoad() {
     renderShell({
       title: `Place ${state.selectedSpot.number}`,
       icon: "parking-square",
-      back: () => { state.screen = "home"; render(); },
+      back: () => {
+        state.screen = "home";
+        render();
+      },
       showLogout: true,
       content: skeletonMySpot(),
     });
-    const fullSpot = await Backend.getSpot(state.selectedSpot.number, viewerSpotNumber());
+    const fullSpot = await Backend.getSpot(
+      state.selectedSpot.number,
+      viewerSpotNumber(),
+    );
     state.selectedSpot = fullSpot;
   }
   renderSpotDetailScreen();

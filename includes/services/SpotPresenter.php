@@ -153,12 +153,11 @@ class SpotPresenter
         ?string $viewerSpotNumber,
     ): array {
         $fields = [];
+        $viewerIsOwner = $viewerSpotNumber !== null && $viewerSpotNumber === $spotNumber;
 
-        if ($status !== 'occupied') {
+        if ($status !== 'occupied' || $viewerIsOwner) {
             $fields['phone'] = decrypt_value($ownerPhoneEncrypted);
         }
-
-        $viewerIsOwner = $viewerSpotNumber !== null && $viewerSpotNumber === $spotNumber;
         if ($status === 'occupied' && $viewerIsOwner && $activeParking !== null) {
             $fields['parked_by_spot_number'] = $activeParking['parked_by_spot_number'];
             $fields['parked_contact_phone'] = decrypt_value($activeParking['phone_encrypted'] ?? null);

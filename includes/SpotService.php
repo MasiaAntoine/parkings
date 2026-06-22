@@ -136,6 +136,10 @@ class SpotService
             json_error('Cette place n\'est pas disponible.');
         }
 
+        if ($number === $parkedBySpotNumber) {
+            json_error('Vous ne pouvez pas vous garer sur votre propre place.');
+        }
+
         $this->parking->park((int) $spot['id'], $parkedBySpotNumber, $phone);
         return ['number' => $number, 'parked' => true];
     }

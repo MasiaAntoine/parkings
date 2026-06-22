@@ -68,7 +68,10 @@ function renderOnboardingNotificationsScreen() {
     `,
   });
 
-  bindNotificationEnableButton("onboarding-enable-notifs", renderOnboardingNotificationsScreen);
+  bindNotificationEnableButton(
+    "onboarding-enable-notifs",
+    renderOnboardingNotificationsScreen,
+  );
   document.getElementById("notif-intro-ok").addEventListener("click", () => {
     state.screen = "home";
     render();

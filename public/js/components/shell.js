@@ -16,12 +16,13 @@ const PROFILE_SCREENS = [
 
 function shouldShowProfile() {
   if (!Storage.isAuthValid() || state.screen === "code") return false;
-  if (["spot", "apartment", "onboarding-phone"].includes(state.screen)) return false;
+  if (["spot", "apartment", "onboarding-phone"].includes(state.screen))
+    return false;
 
   const onSchedulesNotMine =
-    state.screen === "schedules"
-      && state.afterSchedules !== "my-spot"
-      && state.afterSchedules !== "home";
+    state.screen === "schedules" &&
+    state.afterSchedules !== "my-spot" &&
+    state.afterSchedules !== "home";
   if (onSchedulesNotMine) return false;
 
   if (!Storage.getProfile()) return false;

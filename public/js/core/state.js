@@ -38,3 +38,11 @@ function ownedProfileCredentials(spotNumber, fallbackProfile) {
     (fallbackProfile?.number === spotNumber ? fallbackProfile : null)
   );
 }
+
+function ownedSpotNumbersSet() {
+  return new Set(Storage.getOwnedProfiles().map((p) => p.number));
+}
+
+function isOwnedSpot(number) {
+  return ownedSpotNumbersSet().has(number);
+}
