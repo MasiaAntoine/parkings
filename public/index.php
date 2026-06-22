@@ -95,10 +95,44 @@
 </head>
 <body class="text-slate-900">
     <div id="app" class="relative mx-auto flex min-h-dvh w-full max-w-md flex-col"></div>
-    <script src="/js/storage.js?v=32"></script>
-    <script src="/js/backend.js?v=30"></script>
-    <script src="/js/notifications.js?v=28"></script>
-    <script src="/js/app.js?v=39"></script>
+    <?php
+    // Cache-busting partagé pour tous les scripts JS modulaires.
+    $jsVersion = '42';
+    $jsScripts = [
+        'js/storage.js',
+        'js/backend.js',
+        'js/notifications.js',
+        'js/core/config.js',
+        'js/core/state.js',
+        'js/core/utils.js',
+        'js/core/phone-ui.js',
+        'js/core/profile-manager.js',
+        'js/components/toast.js',
+        'js/components/buttons.js',
+        'js/components/skeleton.js',
+        'js/components/tabbar.js',
+        'js/components/shell.js',
+        'js/components/dialogs.js',
+        'js/components/filter-bar.js',
+        'js/components/apply-targets.js',
+        'js/components/spot-card.js',
+        'js/components/trips-list.js',
+        'js/components/notifications-ui.js',
+        'js/screens/code.js',
+        'js/screens/onboarding-spot.js',
+        'js/screens/onboarding-intro.js',
+        'js/screens/home.js',
+        'js/screens/spot-detail.js',
+        'js/screens/my-spot.js',
+        'js/screens/schedules.js',
+        'js/screens/trips.js',
+        'js/screens/edit-profile.js',
+        'js/app.js',
+    ];
+    foreach ($jsScripts as $src) {
+        echo '    <script src="/' . $src . '?v=' . $jsVersion . '"></script>' . "\n";
+    }
+    ?>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
