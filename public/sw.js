@@ -1,4 +1,4 @@
-const CACHE = "parking-v24";
+const CACHE = "parking-v27";
 const ASSETS = [
   "/",
   "/index.php",
@@ -8,6 +8,7 @@ const ASSETS = [
   "/js/storage.js",
   "/js/backend.js",
   "/js/app.js",
+  "/js/notifications.js",
   "/icons/icon-192.svg",
   "/icons/icon-512.svg",
 ];
@@ -50,6 +51,22 @@ self.addEventListener("fetch", (event) => {
         .catch(() => cached || fetch(event.request));
 
       return cached || network;
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if (client.url.startsWith(self.location.origin) && "focus" in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
     }),
   );
 });

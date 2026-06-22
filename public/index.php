@@ -86,13 +86,19 @@
         .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
         .safe-bottom { padding-bottom: max(0.875rem, env(safe-area-inset-bottom)); }
         ::-webkit-scrollbar { width: 0; height: 0; }
+        .filter-chips-scroll {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .filter-chips-scroll::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="text-slate-900">
     <div id="app" class="relative mx-auto flex min-h-dvh w-full max-w-md flex-col"></div>
-    <script src="/js/storage.js?v=27"></script>
-    <script src="/js/backend.js?v=27"></script>
-    <script src="/js/app.js?v=27"></script>
+    <script src="/js/storage.js?v=32"></script>
+    <script src="/js/backend.js?v=30"></script>
+    <script src="/js/notifications.js?v=28"></script>
+    <script src="/js/app.js?v=39"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});

@@ -29,7 +29,9 @@ try {
         'list_spots' => (function () use ($spots, $body): void {
             $viewer = (string) ($body['viewer_number'] ?? '');
             $viewerNumber = $viewer !== '' ? normalize_spot_number($viewer) : null;
-            json_response(['spots' => $spots->listSpots($viewerNumber)]);
+            $atRaw = (string) ($body['at_datetime'] ?? '');
+            $at = $atRaw !== '' ? parse_datetime($atRaw) : null;
+            json_response(['spots' => $spots->listSpots($viewerNumber, $at)]);
         })(),
 
         'spot_exists' => (function () use ($spots, $body): void {
@@ -42,7 +44,9 @@ try {
 
         'get_spot' => (function () use ($spots, $body): void {
             $number = normalize_spot_number((string) ($body['number'] ?? $_GET['number'] ?? ''));
-            json_response($spots->getSpotDetails($number));
+            $viewer = (string) ($body['viewer_number'] ?? '');
+            $viewerNumber = $viewer !== '' ? normalize_spot_number($viewer) : null;
+            json_response($spots->getSpotDetails($number, $viewerNumber));
         })(),
 
         'register_spot' => (function () use ($spots, $body): void {
@@ -84,7 +88,11 @@ try {
         'park' => (function () use ($spots, $body): void {
             $number = normalize_spot_number((string) ($body['number'] ?? ''));
             $parkedBy = normalize_spot_number((string) ($body['parked_by'] ?? ''));
-            json_response($spots->park($number, $parkedBy));
+            $phone = validate_phone((string) ($body['phone'] ?? ''));
+            if ($phone === null) {
+                json_error('Numéro de téléphone requis.');
+            }
+            json_response($spots->park($number, $parkedBy, $phone));
         })(),
 
         'unpark' => (function () use ($spots, $body): void {
@@ -100,7 +108,31 @@ try {
             }
             $depart = parse_datetime((string) ($body['depart_at'] ?? ''));
             $return = parse_datetime((string) ($body['return_at'] ?? ''));
-            json_response($spots->createTrip($number, $depart, $return));
+            $linkGroup = trim((string) ($body['link_group'] ?? ''));
+            if ($linkGroup !== '' && !preg_match('/^[0-9a-f-]{36}$/i', $linkGroup)) {
+                json_error('Groupe de liaison invalide.');
+            }
+            json_response($spots->createTrip(
+                $number,
+                $depart,
+                $return,
+                $linkGroup !== '' ? $linkGroup : null,
+            ));
+        })(),
+
+        'update_trip' => (function () use ($spots, $body): void {
+            $number = normalize_spot_number((string) ($body['number'] ?? ''));
+            $credentials = require_spot_credentials();
+            if ($credentials['number'] !== $number) {
+                json_error('Accès refusé.', 403);
+            }
+            $tripId = (int) ($body['trip_id'] ?? 0);
+            if ($tripId <= 0) {
+                json_error('ID de déplacement invalide.');
+            }
+            $depart = parse_datetime((string) ($body['depart_at'] ?? ''));
+            $return = parse_datetime((string) ($body['return_at'] ?? ''));
+            json_response($spots->updateTrip($number, $tripId, $depart, $return));
         })(),
 
         'cancel_trip' => (function () use ($spots, $body): void {
@@ -110,6 +142,26 @@ try {
                 json_error('Accès refusé.', 403);
             }
             json_response($spots->cancelTrip($number));
+        })(),
+
+        'cancel_trip_by_id' => (function () use ($spots, $body): void {
+            $number = normalize_spot_number((string) ($body['number'] ?? ''));
+            $credentials = require_spot_credentials();
+            if ($credentials['number'] !== $number) {
+                json_error('Accès refusé.', 403);
+            }
+            $tripId = (int) ($body['trip_id'] ?? 0);
+            if ($tripId <= 0) {
+                json_error('ID de déplacement invalide.');
+            }
+            json_response($spots->cancelTripById($number, $tripId));
+        })(),
+
+        'delete_spot' => (function () use ($spots, $body): void {
+            $number = normalize_spot_number((string) ($body['number'] ?? ''));
+            $apartment = validate_apartment((string) ($body['apartment'] ?? ''));
+            $spots->deleteSpot($number, $apartment);
+            json_response(['deleted' => true]);
         })(),
 
         'change_number' => (function () use ($spots, $body): void {

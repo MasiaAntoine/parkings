@@ -22,8 +22,10 @@ CREATE TABLE spot_trips (
     depart_at DATETIME NOT NULL,
     return_at DATETIME NOT NULL,
     cancelled_at DATETIME NULL,
+    link_group CHAR(36) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (spot_id) REFERENCES spots(id) ON DELETE CASCADE
+    FOREIGN KEY (spot_id) REFERENCES spots(id) ON DELETE CASCADE,
+    INDEX idx_spot_trips_link_group (link_group)
 );
 
 CREATE TABLE active_parkings (
@@ -31,6 +33,7 @@ CREATE TABLE active_parkings (
     spot_id INT NOT NULL UNIQUE,
     parked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     parked_by_spot_number VARCHAR(3) NULL,
+    phone_encrypted TEXT NULL,
     FOREIGN KEY (spot_id) REFERENCES spots(id) ON DELETE CASCADE
 );
 

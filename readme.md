@@ -81,7 +81,10 @@ Le numéro d'appartement n'est **pas** une donnée d'affichage. C'est un **secon
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Comment la place devient-elle disponible ?            | **24 h/24** sur la période déclarée                                                                                                                         |
 | Précision des horaires                                | Premier jour : disponible à partir de l'**heure de départ** ; jour de retour : disponible jusqu'à l'**heure de retour**                                     |
+| Combien de déplacements simultanés ?                  | **Plusieurs** — on peut planifier autant de déplacements futurs que nécessaire, chacun modifiable ou annulable indépendamment                              |
+| Peut-on modifier un déplacement existant ?            | **Oui** — depuis « Ma place », bouton « Modifier » sur chaque déplacement à venir                                                                            |
 | Peut-on annuler un déplacement avant la date prévue ? | **Oui** — la place redevient indisponible selon ses règles habituelles                                                                                      |
+| Que deviennent les déplacements passés ?              | **Nettoyés automatiquement** à chaque ouverture de l'accueil (les `return_at < now()` sont marqués comme annulés)                                            |
 | Et si quelqu'un est garé lors de l'annulation ?       | Un **bandeau visible** l'informe : « Le propriétaire de la place XXX est de retour » (sans numéro d'appartement), dismissible, visible 24 h ou jusqu'à fermeture manuelle |
 
 
@@ -104,7 +107,9 @@ Le numéro d'appartement n'est **pas** une donnée d'affichage. C'est un **secon
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Type de compte               | **Aucun** — pas de mot de passe, pas d'email, pas de compte utilisateur                                                   |
 | Code d'accès                 | **6 chiffres** dans `.env`, saisi une fois, mémorisé **7 jours** en localStorage                                          |
-| Que mémorise le navigateur ? | Date d'expiration du code + **numéro de place + numéro d'appartement** → retour direct sur l'**accueil** sans repasser par l'onboarding |
+| Que mémorise le navigateur ? | Date d'expiration du code + **numéro de place + numéro d'appartement** (session courante) + **liste des numéros de place déjà utilisés** (`saved_profiles`, sans appartement) |
+| Multi-profils                | À la déconnexion, l'appartement est effacé mais les **numéros de place déjà connectés** restent en mémoire pour proposer une **reconnexion rapide** (l'appartement reste à ressaisir) |
+| Diffusion du code            | Un bandeau d'avertissement rappelle à la connexion de **ne pas divulguer le code** d'accès commun                          |
 | Protection brute force       | **5 tentatives** de code incorrectes par IP / **15 minutes**                                                              |
 
 
@@ -115,31 +120,39 @@ Le numéro d'appartement n'est **pas** une donnée d'affichage. C'est un **secon
 ```
 Ouverture app
   → Code valide en local ?
-      Non → Saisie code 6 chiffres
+      Non → Saisie code 6 chiffres (+ bandeau "Ne pas divulguer")
   → Place + appartement en local ?
       Oui → Accueil
       Non → Saisie numéro de place (3 chiffres)
+          → Bouton de reconnexion rapide pour chaque profil déjà connecté
           → Place en base ?
-              Non → Appartement → Config horaires → Accueil
+              Non → Appartement → Téléphone (optionnel) → Config horaires → Intro déplacement → Accueil
               Oui → Appartement pour confirmer
                   → Correspond ?
                       Non → Erreur, accès refusé
                       Oui → Horaires configurés ?
-                          Non → Config horaires → Accueil
+                          Non → Config horaires (avec rappel "horaires d'absence") → Intro déplacement → Accueil
                           Oui → Accueil
 
-Accueil → Garer / Libérer / Ma place / Déplacement
+Accueil → Filtrer (date/heure) / Voir détail d'une place / Garer (avec confirmation) / Libérer / Onglets bas
+Onglets bas → Ma place · Horaires · Déplacement
+Ma place → Liste déplacements (ajouter/modifier/annuler chacun) / Horaires / Téléphone / Changer de numéro / Supprimer ma place
+Bouton profil (header) → Déconnexion · Switch vers un autre profil enregistré
 ```
 
-### Écrans (MVP)
+### Écrans
 
-1. **Connexion** — code 6 chiffres (si session expirée)
-2. **Onboarding place** — 3 champs chiffre par chiffre pour le numéro
+1. **Connexion** — code 6 chiffres + avertissement de non-divulgation
+2. **Onboarding place** — 3 champs chiffre par chiffre + raccourcis de reconnexion pour les profils déjà utilisés
 3. **Onboarding appartement** — saisie ou confirmation si place existante (format libre, ex. A01)
-4. **Configuration horaires** — jours de la semaine + plages début/fin
-5. **Accueil** — toutes les places enregistrées (numéro + statut) + actions garer/libérer + bandeaux d'alerte
-6. **Ma place** — statut, horaires, déplacement, changement de numéro, réinitialisation session
-7. **Déplacement** — formulaire départ/retour (date + heure)
+4. **Onboarding téléphone** — facultatif, format français 10 chiffres, chiffré en base, visible par tous
+5. **Configuration horaires** — jours de la semaine + plages début/fin (inputs **toujours visibles**, grisés si jour décoché)
+6. **Onboarding déplacement** — écran d'explication du concept (by-pass des horaires)
+7. **Accueil** — barre de filtre date/heure, places visibles (les *hors plage* masquées par défaut), cartes cliquables, dialog de confirmation avant de se garer, bandeaux d'alerte, **skeletons** de chargement
+8. **Détail d'une place** — plages horaires détaillées par jour + déplacements à venir + téléphone
+9. **Ma place** — statut, **liste des déplacements à venir** (modifier/annuler chacun), bouton « Ajouter un déplacement », horaires, téléphone, changement de numéro, **suppression définitive de la place**
+10. **Déplacement** — formulaire départ/retour (création ou modification d'un déplacement)
+11. **Téléphone** — modification ou suppression du numéro
 
 ---
 
@@ -149,16 +162,17 @@ Aucune donnée confidentielle n'est demandée : le numéro d'appartement seul et
 
 ```
 spots
-  id, number (001–999, unique), apartment_hash, created_at
+  id, number (001–999, unique), apartment_hash, phone_encrypted (optionnel), created_at
 
 spot_schedules
   spot_id, day_of_week (0=lundi … 6=dimanche), start_time, end_time
 
 spot_trips
   spot_id, depart_at, return_at, cancelled_at
+  (plusieurs déplacements à venir possibles par place)
 
 active_parkings
-  spot_id, parked_at
+  spot_id, parked_at, parked_by_spot_number
   (occupation anonyme — pas de numéro d'appartement stocké ni affiché)
 
 spot_alerts
@@ -168,7 +182,11 @@ auth_attempts
   ip_address, attempted_at, success
 
 localStorage (côté client)
-  auth_expires_at, spot_number, apartment (secret, jamais affiché)
+  auth_expires_at       — expiration du code (7 jours)
+  spot_number           — place de la session courante
+  apartment             — secret, jamais affiché, effacé à la déconnexion
+  saved_profiles[]      — numéros de place déjà connectés (sans appartement)
+                          → pour reconnexion rapide et switch de profil
 ```
 
 ---
@@ -236,9 +254,61 @@ Le code d'accès dev est `364728` (modifiable via `ACCESS_CODE` dans `.env.docke
 
 ---
 
+## Fonctionnalités étendues (post-MVP)
+
+Au-delà du MVP, l'app a été enrichie avec les fonctionnalités suivantes, regroupées par thème.
+
+### Recherche et navigation
+
+| Fonctionnalité                            | Description                                                                                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Filtre par date/heure** sur l'accueil   | Barre de recherche en haut de la liste qui recalcule les statuts à la date/heure choisie ("quelles places seront dispo samedi 14h ?") |
+| **Masquage des places hors plage**        | Par défaut, on ne voit que les places `disponible` et `occupée` ; un bouton dévoile les `hors plage` à la demande                     |
+| **Détail d'une place au clic**            | Chaque carte ouvre un écran avec ses **plages horaires détaillées** (jour par jour) et tous ses **déplacements à venir**             |
+| **Barre d'onglets en bas**                | 3 onglets toujours visibles : `Ma place` · `Horaires` · `Déplacement` (remplace l'unique bouton « Ma place »)                        |
+| **Bouton profil en haut à droite**        | Affiche le numéro de place courant ; au clic, sous-menu **Déconnexion** + liste des autres profils enregistrés pour switcher         |
+
+### Stationnement et déplacements
+
+| Fonctionnalité                                | Description                                                                                                                          |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Dialog de confirmation « Je me gare ici »** | Avant de se garer, une modale rappelle jusqu'à quand la place est libre (hint d'horaire ou date de retour du déplacement)            |
+| **Plusieurs déplacements par place**          | On peut planifier autant de déplacements futurs que nécessaire — ils s'empilent dans « Ma place »                                    |
+| **Modifier un déplacement**                   | Bouton « Modifier » sur chaque déplacement à venir, pré-remplit le formulaire                                                        |
+| **Annuler un déplacement précis**             | Annulation indépendante de chaque déplacement (au lieu d'une annulation globale)                                                     |
+| **Nettoyage automatique**                     | À chaque chargement de l'accueil, les déplacements dont `return_at` est dépassé sont marqués `cancelled` côté serveur                |
+| **Suppression définitive de la place**        | Bouton rouge dans « Ma place » + confirmation native ; supprime la place et toutes ses données associées (horaires, déplacements, parking actif, alertes) |
+
+### Onboarding enrichi
+
+| Fonctionnalité                              | Description                                                                                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Étape « concept de déplacement »**        | Après la config des horaires, écran explicatif : « Un déplacement by-passe vos plages habituelles, votre place est libre 24h/24 »          |
+| **Horaires toujours affichés**              | Dans la config, les heures début/fin restent visibles même quand un jour est décoché (grisées et désactivées) — plus lisible pour comparer |
+| **Re-onboarding horaires**                  | À la reconnexion d'une place existante **sans horaires**, l'app redirige vers l'écran d'horaires avec un message : « Ces horaires correspondent à vos absences habituelles (ex. travail). Ils permettent à vos voisins de savoir quand votre place est disponible. » |
+| **Message de non-divulgation du code**      | Bandeau d'avertissement sur l'écran de saisie du code commun                                                                               |
+
+### Multi-profils (sans risque pour l'appartement)
+
+| Fonctionnalité                          | Description                                                                                                                                       |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mémorisation des numéros de place**   | À chaque connexion réussie, le numéro de place rejoint `saved_profiles[]` en localStorage (**jamais l'appartement**)                              |
+| **Reconnexion rapide**                  | L'écran de saisie du numéro de place propose des **boutons de reconnexion rapide** pour chaque profil sauvegardé (l'appartement reste à ressaisir) |
+| **Switch de profil**                    | Depuis le menu profil (header), passage direct à l'écran d'appartement d'un autre profil sauvegardé sans repasser par l'onboarding complet        |
+| **Déconnexion partielle**               | La déconnexion efface l'auth + l'appartement, mais **conserve** la liste des profils déjà utilisés                                                |
+
+### UX et performance
+
+| Fonctionnalité                         | Description                                                                                                                       |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Skeletons de chargement**            | Cartes animées (`animate-pulse`) sur l'accueil et « Ma place » pendant les requêtes initiales                                     |
+| **Animations de chargement boutons**   | Tous les boutons d'action async (park, save, delete, trip…) affichent un spinner et sont désactivés pendant l'appel API           |
+
+---
+
 ## Choix volontairement simples (hors scope MVP)
 
-- Pas de notification push — les alertes s'affichent **dans l'app** uniquement
+- **Notifications navigateur** — alertes « retour anticipé » via l'API Notification (polling toutes les 60 s tant que l'app est ouverte ; pas de push serveur)
 - Pas de file d'attente ni de réservation à l'avance
 - Pas de compte administrateur
 - Pas d'historique des occupations

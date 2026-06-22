@@ -54,9 +54,13 @@ function is_docker_runtime(): bool
 }
 
 if (is_docker_runtime()) {
+    // En Docker, on utilise UNIQUEMENT .env.docker.dev (les variables sont déjà
+    // injectées par docker-compose via env_file, ce chargement est un filet de sécurité).
+    // Le fichier .env est ignoré pour ne pas tirer les credentials de prod par erreur.
     load_env_file(config_root() . '/.env.docker.dev');
+} else {
+    load_env_file(config_root() . '/.env');
 }
-load_env_file(config_root() . '/.env', override: true);
 
 date_default_timezone_set(getenv('TZ') ?: 'Europe/Paris');
 
